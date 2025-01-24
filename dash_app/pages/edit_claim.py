@@ -524,7 +524,7 @@ def save_claim(
     State("cid-store", "data"),  # This is the row ID, not the actual claim_number
     prevent_initial_call=True,
 )
-def download_docx(cid_value):
+def download_docx(claim_number):
     # 1) Fetch row
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
