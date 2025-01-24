@@ -3,6 +3,7 @@ import dash
 from dash import html, dcc, Input, Output, State, callback
 import dash_mantine_components as dmc
 import pymysql
+import requests  # Imported for fetching the DOCX file
 
 from db import get_db_connection
 
@@ -329,6 +330,22 @@ def layout(cid=None, **other_kwargs):
                 id="save-confirmation",
                 style={"color": "green", "marginTop": "1rem"}
             ),
+
+            # ======= Download Report Button =======
+            dmc.Button(
+                "Download Report",
+                id="download-docx-button",
+                n_clicks=0,
+                color="blue",
+                fullWidth=True,
+                mt="md",
+            ),
+
+            # ======= Download Component =======
+            dcc.Download(id="download-docx"),
+
+            # ======= Notification Container =======
+            dmc.Notification(id="download-notification", autoClose=True, duration=5000),
         ],
         # Removed gap or spacing usage entirely
         style={"padding": "20px"},
@@ -487,3 +504,52 @@ def save_claim(
         conn.close()
 
     return msg
+
+@callback(
+    Output("download-docx", "data"),
+    Output("download-notification", "children"),
+    Output("download-notification", "color"),
+    Input("download-docx-button", "n_clicks"),
+    State("cid-store", "data"),
+    prevent_initial_call=True,
+)
+def download_docx(n_clicks, cid):
+    if n_clicks is None or n_clicks == 0:
+        return dash.no_update, dash.no_update, dash.no_update
+
+    if not cid:
+        return dash.no_update, "Invalid Claim ID.", "red"
+
+    try:
+        # Connect to the database
+        conn = get_db_connection()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+        # Fetch the report_spaces_link for the given cid
+        sql = "SELECT report_spaces_link FROM claims WHERE id = %s"
+        cursor.execute(sql, (cid,))
+        result = cursor.fetchone()
+
+        if not result or not result.get("report_spaces_link"):
+            return dash.no_update, "Report link not found.", "red"
+
+        report_link = result["report_spaces_link"]
+
+        # Fetch the DOCX file from the report_link
+        response = requests.get(report_link)
+        if response.status_code != 200:
+            return dash.no_update, "Failed to download the report.", "red"
+
+        # Generate a filename for the downloaded file
+        filename = f"Claim_{cid}_Report.docx"
+
+        # Return the file and success notification
+        return dcc.send_bytes(response.content, filename=filename), "Report downloaded successfully.", "green"
+
+    except Exception as e:
+        print(f"Error in download_docx callback: {e}")
+        return dash.no_update, "An error occurred while downloading the report.", "red"
+
+    finally:
+        cursor.close()
+        conn.close()
