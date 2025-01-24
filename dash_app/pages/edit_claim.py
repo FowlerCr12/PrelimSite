@@ -4,7 +4,7 @@ from dash import html, dcc, Input, Output, State, callback
 import dash_mantine_components as dmc
 import pymysql
 import requests  # Imported for fetching the DOCX file
-
+from docxtpl import DocxTemplate
 from db import get_db_connection
 
 dash.register_page(__name__, path_template="/edit/<cid>")
@@ -524,46 +524,39 @@ def save_claim(
     State("cid-store", "data"),  # This is the row ID, not the actual claim_number
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, cid_value):
-    if n_clicks is None or n_clicks == 0:
-        return dash.no_update, dash.no_update, dash.no_update
+def download_docx(cid_value):
+    # 1) Fetch row
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if not row:
+        return jsonify({"error": "Claim not found"}), 404
 
-    if not cid_value:
-        return dash.no_update, "Invalid Claim ID.", "red"
+    # 2) docxtpl usage
+    doc = DocxTemplate("/opt/PrelimSite/template.docx")
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+    # The docxtpl placeholders look like {{ Policyholder }} in the Word file
+    context = {
+        "Policyholder": row["Policyholder"],
+        "Date_Of_Loss": row["Date_Of_Loss"],
+        # ...
+    }
 
-        # Get both fields: the actual user-friendly claim_number and the link
-        sql = "SELECT claim_number, report_spaces_link FROM claims WHERE id = %s"
-        cursor.execute(sql, (cid_value,))
-        row = cursor.fetchone()
+    doc.render(context)
 
-        if not row:
-            return dash.no_update, "No such claim found.", "red"
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
 
-        if not row.get("report_spaces_link"):
-            return dash.no_update, "Report link not found.", "red"
+    filename = f"Claim_{claim_number}_Report.docx"
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
 
-        report_link = row["report_spaces_link"]
-        actual_claim_number = row["claim_number"]  # e.g. "ACME-1234"
-
-        # Fetch the DOCX
-        response = requests.get(report_link)
-        if response.status_code != 200:
-            return dash.no_update, "Failed to download the report.", "red"
-
-        # Now name the file with the real claim_number
-        filename = f"Claim_{actual_claim_number}_Report.docx"
-
-        return dcc.send_bytes(response.content, filename=filename), "Report downloaded successfully.", "green"
-
-    except Exception as e:
-        print(f"Error in download_docx callback: {e}")
-        return dash.no_update, "An error occurred while downloading the report.", "red"
-
-    finally:
-        cursor.close()
-        conn.close()
 
