@@ -559,7 +559,8 @@ def download_docx(n_clicks, row_id):
     buffer.seek(0)
     time.sleep(10)
 
-    filename = f"Claim_{claim_number}_Report.docx"
+    filename = f"Claim_{row['claim_number']}_Report.docx"
+
 
     # For a Dash download, typically we do:
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
