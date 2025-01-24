@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "elevation-project-384914",
+  "private_key_id": "e1aa7d1e97d6abe6f7da6962f577fed544caa86c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCtdAy2ff70WpEP\nzIw9YM+46zdJBA07lp+CHt6Tggxd8AHDca6yyiqJjkcYNgtUXWm2cARJMla/lbX2\n6jyjX2N9wD4zaWZrumsiNBuPm5yUxzr+R/vRc3sTEsT10EIHzGOmltZjnoTXG4LS\nKq8Ua3rqEBlLOovunC7Rnbdj1NsckpuAvju3Ba9FWieyzMTRIuIMI0d6A8jJukiZ\nZk8p0zZchy4QUdlEJIH0oNRyXKrr/ysMiE8hoEHzVOj2UwWXU0wmn9Gh1liul1aX\npQalc7l1SovnPhdBRJ5veQQuXfL8dOowKjUMbznIVxpohtj3gRLtny8UbMktCeJi\nGo61olVtAgMBAAECggEAHAo3Jec/aHwdmDq+bwuv+NpZgR29D+V9GrlnzNvIqQTs\nHA7MKY4CC2OrPZA7C6PgO4RnRPf0yxrmJCjgrZ51hHYn+AKxcnfb6tcWn4QN74U3\nlbTIUidDfaVansxQaFdTwrH+rXMKUYXag6Qv0nK/l4gLtrwbs/KepPdElshptXf/\nb/nXFU5on833pt2iwhAmDSE1JUhfW5Es7WvTvt1ZryL5xu0fepLIPL/3KqlbCrhc\nRHwYmqF7Z5q9y+GBXdf2N/U4qistVphbbogyRM8pbriyrg+H4GI1DR2cgPko6D0s\nKRU7AJc398StV2hIgRX61XpoINaTM2VujyszwG8oQQKBgQDmn0ZU3gomziEGYv/o\n4CRPYxkVTQUQsSovlI+sc0Y7zbkUvJhdn7I5LpyJFZk/cuqRVsYNIN6Rq6lYFr8l\nb6dZVfu95y3npvWgrIHEJ6kYmebEROKq6YLl4Yy6CojMzAhIlgLuE7gqk0l25kcD\n1ccgCQ4ZtIDdD3cZcujt1DK54QKBgQDAik3R0mLYgIk1fgSdBuafxjwyF2eMivCe\nb2rZsUTG7tCXAPFgGnRd7Yf/3Ekch2+Zs5+nUKB8s2+O7Nw6J88ISUQ3svpRvl0A\nSMe7uCwS5jxrfhtX2q88x/76KCRPxuaGwBe88SWFdrCbTaFe3eNFMdXyZGMMHulH\ndsfqRh2FDQKBgQDgJ4FBrcsqKoG45nKcE3fXXZect46rybcaJgh7clOafvtcp25k\n2Xptz9s/9qlMHVLWzwOS8RbDeZkQUJObPGnpEASucMuSdBocAG/kizP1AGlm7Rlv\nS6X57/9LOD/85ndKrdvNMYd4gk4ObgYqORfhEEwPOf1iX8zABItX1j8zoQKBgCzM\nwXit3EQF/GcO8GHdJjJM/Nqm6XghKAWlZRZMEfW7wZsxI/i5jxP/3eIhzn0t4kDA\nM8jJkN4THkUCRefeNWT3L0FKisYUZi1Xwemi29Z17d8RE6mof5fD7UclqfVKEX+P\nGLbk4Vchm8w3DvI07Nm/08k3pHhAhQUU1UVklR/NAoGAAunUQNG5/ktZQqXkBjvl\nFoc325ZheQvcW4y7i7Apf42xRH8lJopR5oFKGNO1k7DCo12HEvCnq/fTROyeoWJ7\nWrpkkSxGHUNVcFCMw1MMqWtTcrLqWMWNPGb14YVtSBWQC2WR3OGtGzgIFyYWHMcJ\nYV/Q6fm2R8AgJHLrHaNbOPY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "prelimprogram@elevation-project-384914.iam.gserviceaccount.com",
+  "client_id": "106945904630714366620",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/prelimprogram%40elevation-project-384914.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
