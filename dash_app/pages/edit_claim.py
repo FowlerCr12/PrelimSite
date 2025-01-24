@@ -544,6 +544,7 @@ def download_docx(n_clicks, claim_number):
         return dash.no_update, "Claim not found!", "red"
 
     # docxtpl usage
+    print("attempting to find template")
     doc = DocxTemplate("/opt/PrelimSite/template.docx")
     print("Gathered template")
     context = {
