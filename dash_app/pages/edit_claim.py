@@ -563,3 +563,4 @@ def download_docx(n_clicks, row_id):
     filename = f"Claim_{row['claim_number']}_Report.docx"
 
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
+
