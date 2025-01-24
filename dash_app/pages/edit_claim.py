@@ -651,6 +651,9 @@ def download_docx(n_clicks, row_id):
         r"\{\{Coverage_B_Deductible\}\}": row.get("Coverage_B_Deductible", ""),
         r"\{\{Coverage_B_Reserve\}\}": row.get("Coverage_B_Reserve", ""),
         r"\{\{Coverage_B_Advance\}\}": row.get("Coverage_B_Advance", ""),
+        r"\{\{Adjuster_Name\}\}": row.get("Adjuster_Name", ""),
+        r"\{\{Policy_Number\}\}": row.get("Policy_Number", ""),
+        r"\{\{claim_number\}\}": row.get("claim_number", ""),
 
 
         
