@@ -80,7 +80,7 @@ header = dmc.AppShellHeader(
     dmc.Group(
         [
             dmc.Burger(id="burger", size="sm", hiddenFrom="sm", opened=False),
-            dmc.Title("My Demo App", c="blue"),
+            dmc.Title("Status Report Program", c="blue"),
         ],
         h="100%",
         px="md",

@@ -618,7 +618,7 @@ def download_docx(n_clicks, row_id):
     # 3) Load the Word .docx template from disk
     # Make sure you actually have this file, and your placeholders in the doc are e.g. "{{Policyholder}}"
     from docx import Document
-    template_path = "/opt/PrelimScraper/template.docx"
+    template_path = "/opt/PrelimSite/template.docx"
     doc = Document(template_path)
 
     # 4) Perform the naive placeholder replacements
