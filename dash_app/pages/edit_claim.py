@@ -7,6 +7,7 @@ import requests  # Imported for fetching the DOCX file
 from docxtpl import DocxTemplate
 from db import get_db_connection
 import time
+from io import BytesIO
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
