@@ -24,7 +24,7 @@ app = Flask(__name__)
 ##############################################################################
 #  CONFIG: OPENAI
 ##############################################################################
-openai.api_key = "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"  # <--- ADJUST: put your real OpenAI key or use env vars
+openai.api_key = "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"  # <--- ADJUST: put your real OpenAI key or use env vars
 
 ##############################################################################
 #  CONFIG: GOOGLE CLOUD
