@@ -345,7 +345,19 @@ def layout(cid=None, **other_kwargs):
             dcc.Download(id="download-docx"),
 
             # ======= Notification Container =======
-            dmc.Notification(id="download-notification", autoClose=True, duration=5000),
+            dmc.Notification(
+    id="download-notification",
+    title="Download Complete",
+    message="Your file has been successfully downloaded.",
+    color="green",
+    autoClose=True,
+    duration=5000,
+    action={
+        "label": "Close",
+        "onClick": "function() { return false; }"
+    },
+)
+
         ],
         # Removed gap or spacing usage entirely
         style={"padding": "20px"},
