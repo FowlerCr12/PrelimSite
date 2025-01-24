@@ -4,8 +4,9 @@ from dash import html, dcc, Input, Output, State, callback
 import dash_mantine_components as dmc
 import pymysql
 import requests  # Imported for fetching the DOCX file
-
+from docxtpl import DocxTemplate
 from db import get_db_connection
+import time
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
@@ -507,6 +508,7 @@ def save_claim(
         ))
         conn.commit()
         msg = "Changes saved successfully!"
+        print("Changes saved successfully!")
     except Exception as e:
         conn.rollback()
         msg = f"Error saving changes: {e}"
@@ -521,25 +523,24 @@ def save_claim(
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # <-- This is the DB row ID
+    State("cid-store", "data"),  # The row ID
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, row_id):
+def download_docx(n_clicks, claim_number):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
     conn = get_db_connection()
     print("Getting db connection")
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    # Use 'WHERE id = %s' instead of 'WHERE claim_number = %s'
-    cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
-    print("selecting db row by id")
+    cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
+    print("selecting db shit")
     row = cursor.fetchone()
     cursor.close()
     conn.close()
     print("Connection closed")
-
     if not row:
+        # Instead of a Flask response, return dash outputs
         return dash.no_update, "Claim not found!", "red"
 
     # docxtpl usage
@@ -554,13 +555,14 @@ def download_docx(n_clicks, row_id):
     doc.render(context)
     print("sleeping 10 seconds")
     time.sleep(10)
+    
 
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     time.sleep(10)
 
-    filename = f"Claim_{row['claim_number']}_Report.docx"
+    filename = f"Claim_{claim_number}_Report.docx"
 
+    # For a Dash download, typically we do:
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
-
