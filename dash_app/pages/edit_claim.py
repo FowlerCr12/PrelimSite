@@ -4,10 +4,11 @@ from dash import html, dcc, Input, Output, State, callback
 import dash_mantine_components as dmc
 import pymysql
 import requests  # Imported for fetching the DOCX file
-from docxtpl import DocxTemplate
 from db import get_db_connection
 import time
 from io import BytesIO
+import re
+from docx import Document
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
@@ -519,48 +520,119 @@ def save_claim(
 
     return msg
 
+def paragraph_replace_text(paragraph, regex, replace_str):
+    """
+    Replaces matches for 'regex' with 'replace_str' across runs in a paragraph.
+    """
+    while True:
+        text = paragraph.text
+        match = regex.search(text)
+        if not match:
+            break
+
+        runs = iter(paragraph.runs)
+        start, end = match.start(), match.end()
+
+        # Advance past runs that do not contain the start of the match
+        for run in runs:
+            run_len = len(run.text)
+            if start < run_len:
+                break
+            start -= run_len
+            end -= run_len
+
+        run_text = run.text
+        run_len = len(run_text)
+        # Replace the part of the match in this run with the replacement text
+        run.text = f"{run_text[:start]}{replace_str}{run_text[end:]}"
+        end -= run_len
+
+        # Remove the remainder of the matched text from subsequent runs
+        for run in runs:
+            if end <= 0:
+                break
+            run_text = run.text
+            run_len = len(run_text)
+            run.text = run_text[end:]
+            end -= run_len
+
+
+def replace_in_paragraphs(doc, replacements):
+    """
+    Iterates over all paragraphs and tables in the doc, performing regex replacements.
+    """
+    # Replace in normal paragraphs
+    for paragraph in doc.paragraphs:
+        for pattern, replace_str in replacements.items():
+            regex = re.compile(pattern)
+            paragraph_replace_text(paragraph, regex, replace_str)
+
+    # Replace in tables as well
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for pattern, replace_str in replacements.items():
+                        regex = re.compile(pattern)
+                        paragraph_replace_text(paragraph, regex, replace_str)
+
 @callback(
     Output("download-docx", "data"),
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # The row ID
+    State("cid-store", "data"),  # The row ID, or claim_number, whichever you are using
     prevent_initial_call=True,
 )
 def download_docx(n_clicks, row_id):
-    if n_clicks is None or n_clicks == 0:
+    if not n_clicks:
         return dash.no_update, dash.no_update, dash.no_update
 
+    # 1) Fetch row from DB
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    # if 'row_id' is truly the `id` column:
+    # cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
+    #
+    # if 'row_id' is actually 'claim_number', do:
+    # cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (row_id,))
+
     cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()
+
     if not row:
-        # Instead of a Flask response, return dash outputs
         return dash.no_update, "Claim not found!", "red"
 
-    # docxtpl usage
-    print("attempting to find template")
-    doc = DocxTemplate("/opt/PrelimSite/template.docx")
-    print("Gathered template")
-    context = {
-        "Policyholder": row["Policyholder"],
-        "Date_Of_Loss": row["Date_Of_Loss"],
-        # ...
+    # 2) Build a replacements dict for naive placeholders like {{Policyholder}}
+    # In your Word template, you'd have placeholders literally like "{{Policyholder}}"
+    replacements = {
+        r"\{\{Policyholder\}\}": row.get("Policyholder", ""),
+        r"\{\{DateOfLoss\}\}": row.get("Date_Of_Loss", ""),
+        # ... add as many placeholders as you used in your .docx
+        # e.g. r"\{\{Insurer\}\}": row.get("Insurer", "")
     }
-    doc.render(context)
-    time.sleep(10)
-    
 
+    # 3) Load the Word .docx template from disk
+    # Make sure you actually have this file, and your placeholders in the doc are e.g. "{{Policyholder}}"
+    from docx import Document
+    template_path = "/opt/PrelimScraper/template.docx"
+    doc = Document(template_path)
+
+    # 4) Perform the naive placeholder replacements
+    replace_in_paragraphs(doc, replacements)
+
+    # (Optional) Sleep for debugging or demonstration
+    time.sleep(2)
+
+    # 5) Save to in-memory buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
-    time.sleep(10)
 
-    filename = f"Claim_{row['claim_number']}_Report.docx"
-
-
-    # For a Dash download, typically we do:
+    filename = f"Claim_{row_id}_Report.docx"
+    
+    # 6) Return a dcc.Download object + success message
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
