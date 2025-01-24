@@ -9,6 +9,8 @@ import time
 from io import BytesIO
 import re
 from docx import Document
+from dotenv import load_dotenv
+load_dotenv()
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
@@ -56,6 +58,15 @@ def layout(cid=None, **other_kwargs):
 
             html.H3(f"Editing Claim: {cid}"),
             dmc.Text("Please fill out the fields below (data loaded from DB)."),
+            dmc.Button(
+                "View Binder PDF",
+                component="a",  
+                href=claim_data.get("binder_spaces_link", ""),  # or ""
+                target="_blank",
+                color="blue",
+                variant="outline",
+                mt="md"
+            ),
 
             # ========== Basic Fields in columns ==========
             dmc.Group(
@@ -327,6 +338,7 @@ def layout(cid=None, **other_kwargs):
             data=[
                 {"label": "In Review",  "value": "In Review"},
                 {"label": "Reviewed",   "value": "Reviewed"},
+                
                 {"label": "Needs Work", "value": "Needs Work"},
             ],
             style={"width": "45%"}
