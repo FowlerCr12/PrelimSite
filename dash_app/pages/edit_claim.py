@@ -654,6 +654,8 @@ def download_docx(n_clicks, row_id):
         r"\{\{Adjuster_Name\}\}": row.get("Adjuster_Name", ""),
         r"\{\{Policy_Number\}\}": row.get("Policy_Number", ""),
         r"\{\{claim_number\}\}": row.get("claim_number", ""),
+        r"\{\{loss_address\}\}": row.get("Loss_Address", ""),
+        
 
 
         
