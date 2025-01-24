@@ -350,8 +350,7 @@ def layout(cid=None, **other_kwargs):
     title="Download Complete",
     message="Your file has been successfully downloaded.",
     color="green",
-    autoClose=True,
-    duration=5000,
+    autoClose=5000,
     action={
         "label": "Close",
         "onClick": "function() { return false; }"
