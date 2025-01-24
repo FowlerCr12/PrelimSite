@@ -521,40 +521,42 @@ def save_claim(
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),
+    State("cid-store", "data"),  # This is the row ID, not the actual claim_number
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, claim_number):
+def download_docx(n_clicks, cid_value):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
-    if not claim_number:
+    if not cid_value:
         return dash.no_update, "Invalid Claim ID.", "red"
 
     try:
-        # Connect to the database
         conn = get_db_connection()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
 
-        # Fetch the report_spaces_link for the given cid
-        sql = "SELECT report_spaces_link FROM claims WHERE id = %s"
-        cursor.execute(sql, (claim_number,))
-        result = cursor.fetchone()
+        # Get both fields: the actual user-friendly claim_number and the link
+        sql = "SELECT claim_number, report_spaces_link FROM claims WHERE id = %s"
+        cursor.execute(sql, (cid_value,))
+        row = cursor.fetchone()
 
-        if not result or not result.get("report_spaces_link"):
+        if not row:
+            return dash.no_update, "No such claim found.", "red"
+
+        if not row.get("report_spaces_link"):
             return dash.no_update, "Report link not found.", "red"
 
-        report_link = result["report_spaces_link"]
+        report_link = row["report_spaces_link"]
+        actual_claim_number = row["claim_number"]  # e.g. "ACME-1234"
 
-        # Fetch the DOCX file from the report_link
+        # Fetch the DOCX
         response = requests.get(report_link)
         if response.status_code != 200:
             return dash.no_update, "Failed to download the report.", "red"
 
-        # Generate a filename for the downloaded file
-        filename = f"Claim_{claim_number}_Report.docx"
+        # Now name the file with the real claim_number
+        filename = f"Claim_{actual_claim_number}_Report.docx"
 
-        # Return the file and success notification
         return dcc.send_bytes(response.content, filename=filename), "Report downloaded successfully.", "green"
 
     except Exception as e:
@@ -564,3 +566,4 @@ def download_docx(n_clicks, claim_number):
     finally:
         cursor.close()
         conn.close()
+
