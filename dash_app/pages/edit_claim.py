@@ -320,6 +320,17 @@ def layout(cid=None, **other_kwargs):
                 placeholder="A concise summary of the claim...",
                 minRows=3
             ),
+            dmc.Select(
+            label="Review Status",
+            id="review-status",
+            value=claim_data.get("Review_Status", "In Review"),
+            data=[
+                {"label": "In Review",  "value": "In Review"},
+                {"label": "Reviewed",   "value": "Reviewed"},
+                {"label": "Needs Work", "value": "Needs Work"},
+            ],
+            style={"width": "45%"}
+        ),
 
             # ========== Save Button & Confirmation ==========
             dmc.Group(
@@ -333,6 +344,7 @@ def layout(cid=None, **other_kwargs):
                 id="save-confirmation",
                 style={"color": "green", "marginTop": "1rem"}
             ),
+            
 
             # ======= Download Report Button =======
             dmc.Button(
@@ -401,6 +413,7 @@ def layout(cid=None, **other_kwargs):
         State("next-steps-paragraph", "value"),
         State("final-report-paragraph", "value"),
         State("claim-summary-par", "value"),
+        State("review-status", "value"),
     ],
     prevent_initial_call=True
 )
@@ -415,7 +428,7 @@ def save_claim(
     claim_assigned_date, claim_contact_date, claim_inspection_date,
     preliminary_report_par, insured_communication_paragraph, claim_reserve_paragraph,
     insured_concern_paragraph, adjuster_response_paragraph, supporting_doc_paragraph,
-    next_steps_paragraph, final_report_paragraph, claim_summary_par
+    next_steps_paragraph, final_report_paragraph, claim_summary_par, review_status
 ):
     """
     When the user clicks 'Save Changes', update the database with the new values.
@@ -466,7 +479,8 @@ def save_claim(
             Supporting_Doc_Paragraph = %s,
             Next_Steps_Paragraph = %s,
             Final_Report_Paragraph = %s,
-            Claim_Summary_Par = %s
+            Claim_Summary_Par = %s,
+            Review_Status = %s
 
         WHERE id = %s
         """
@@ -504,6 +518,7 @@ def save_claim(
             next_steps_paragraph,
             final_report_paragraph,
             claim_summary_par,
+            review_status,
 
             # WHERE
             claim_id
