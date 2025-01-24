@@ -526,19 +526,16 @@ def save_claim(
     State("cid-store", "data"),  # The row ID
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, claim_number):
+def download_docx(n_clicks, row_id):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
     conn = get_db_connection()
-    print("Getting db connection")
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
-    print("selecting db shit")
+    cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()
-    print("Connection closed")
     if not row:
         # Instead of a Flask response, return dash outputs
         return dash.no_update, "Claim not found!", "red"
@@ -553,7 +550,6 @@ def download_docx(n_clicks, claim_number):
         # ...
     }
     doc.render(context)
-    print("sleeping 10 seconds")
     time.sleep(10)
     
 
