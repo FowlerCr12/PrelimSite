@@ -21,7 +21,7 @@ def make_id_autoincrement():
     alter_sql = f"""
         UPDATE claims
         SET Review_Status = 'Processing'
-        WHERE Review_Status IS 'In Review';
+        WHERE Review_Status = 'In Review';
     """
 
     try:
