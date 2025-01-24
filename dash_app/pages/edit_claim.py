@@ -530,24 +530,30 @@ def download_docx(n_clicks, claim_number):
         return dash.no_update, dash.no_update, dash.no_update
 
     conn = get_db_connection()
+    print("Getting db connection")
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
+    print("selecting db shit")
     row = cursor.fetchone()
     cursor.close()
     conn.close()
+    print("Connection closed")
     if not row:
         # Instead of a Flask response, return dash outputs
         return dash.no_update, "Claim not found!", "red"
 
     # docxtpl usage
     doc = DocxTemplate("/opt/PrelimSite/template.docx")
+    print("Gathered template")
     context = {
         "Policyholder": row["Policyholder"],
         "Date_Of_Loss": row["Date_Of_Loss"],
         # ...
     }
     doc.render(context)
+    print("sleeping 10 seconds")
     time.sleep(10)
+    
 
     buffer = BytesIO()
     doc.save(buffer)
