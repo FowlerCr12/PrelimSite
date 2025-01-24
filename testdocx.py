@@ -14,7 +14,7 @@ def generate_claim_docx_tpl(claim_number):
         return jsonify({"error": "Claim not found"}), 404
 
     # 2) docxtpl usage
-    doc = DocxTemplate("/path/to/template.docx")
+    doc = DocxTemplate("/opt/PrelimSite/template.docx")
 
     # The docxtpl placeholders look like {{ Policyholder }} in the Word file
     context = {
