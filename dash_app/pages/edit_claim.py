@@ -626,6 +626,34 @@ def download_docx(n_clicks, row_id):
     replacements = {
         r"\{\{Policyholder\}\}": row.get("Policyholder", ""),
         r"\{\{DateOfLoss\}\}": row.get("Date_Of_Loss", ""),
+        r"\{\{Insurer_Name\}\}": row.get("Insurer", ""),
+        r"\{\{Coverage_A_Advance\}\}": row.get("Coverage_A_Advance", ""),
+        r"\{\{Coverage_A_Reserve\}\}": row.get("Coverage_A_Reserve", ""),
+        r"\{\{Coverage_A_Deductible\}\}": row.get("Coverage_A_Deductible", ""),
+        r"\{\{coverage_building\}\}": row.get("coverage_building", ""),
+        r"\{\{claim_type\}\}": row.get("claim_type", ""),
+        r"\{\{Insured_Contact_Info\}\}": row.get("Insured_Contact_Info", ""),
+        r"\{\{Adjuster_Contact_Info\}\}": row.get("Adjuster_Contact_Info", ""),
+        r"\{\{Current_Claim_Status_Par\}\}": row.get("Current_Claim_Status_Par", ""),
+        r"\{\{Claim_Assigned_Date\}\}": row.get("Claim_Assigned_Date", ""),
+        r"\{\{Claim_Contact_Date\}\}": row.get("Claim_Contact_Date", ""),
+        r"\{\{Claim_Inspection_Date\}\}": row.get("Claim_Inspection_Date", ""),
+        r"\{\{Preliminary_Report_Par\}\}": row.get("Preliminary_Report_Par", ""),
+        r"\{\{Insured_Communication_Paragraph\}\}": row.get("Insured_Communication_Paragraph", ""),
+        r"\{\{Claim_Reserve_Paragraph\}\}": row.get("Claim_Reserve_Paragraph", ""),
+        r"\{\{Insured_Concern_Paragraph\}\}": row.get("Insured_Concern_Paragraph", ""),
+        r"\{\{Next_Steps_Paragraph\}\}": row.get("Next_Steps_Paragraph", ""),
+        r"\{\{Final_Report_Paragraph\}\}": row.get("Final_Report_Paragraph", ""),
+        r"\{\{Claim_Summary_Par\}\}": row.get("Claim_Summary_Par", ""),
+        r"\{\{Supporting_Doc_Paragraph\}\}": row.get("Supporting_Doc_Paragraph", ""),
+        r"\{\{Adjuster_Response_Paragraph\}\}": row.get("Adjuster_Response_Paragraph", ""),
+        r"\{\{coverage_contents\}\}": row.get("coverage_contents", ""),
+        r"\{\{Coverage_B_Deductible\}\}": row.get("Coverage_B_Deductible", ""),
+        r"\{\{Coverage_B_Reserve\}\}": row.get("Coverage_B_Reserve", ""),
+        r"\{\{Coverage_B_Advance\}\}": row.get("Coverage_B_Advance", ""),
+
+
+        
         # ... add as many placeholders as you used in your .docx
         # e.g. r"\{\{Insurer\}\}": row.get("Insurer", "")
     }
