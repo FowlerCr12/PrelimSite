@@ -22,8 +22,6 @@ def make_id_autoincrement():
         UPDATE claims
         SET Review_Status = 'Processing'
         WHERE Review_Status IS NULL;
-        ALTER TABLE claims
-        MODIFY Review_Status VARCHAR(255) NOT NULL DEFAULT 'Processing';
     """
 
     try:
