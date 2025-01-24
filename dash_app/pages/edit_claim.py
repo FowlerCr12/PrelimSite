@@ -6,6 +6,7 @@ import pymysql
 import requests  # Imported for fetching the DOCX file
 from docxtpl import DocxTemplate
 from db import get_db_connection
+import time
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
@@ -546,10 +547,12 @@ def download_docx(n_clicks, claim_number):
         # ...
     }
     doc.render(context)
+    time.sleep(10)
 
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
+    time.sleep(10)
 
     filename = f"Claim_{claim_number}_Report.docx"
 
