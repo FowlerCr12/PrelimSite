@@ -29,7 +29,7 @@ openai.api_key = "sk-proj-_2dKiU_9CZe81Y-e4oKsNXgl2cg2DCY-Op8uNuHgwGRwvoLrXIz-ft
 ##############################################################################
 #  CONFIG: GOOGLE CLOUD
 ##############################################################################
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/PrelimScraper/elevation-project-384914-e1aa7d1e97d6.json"  # <--- ADJUST
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/PrelimSite/elevation-project-384914-e1aa7d1e97d6.json"  # <--- ADJUST
 PROJECT_ID = "elevation-project-384914"
 LOCATION = "us"  # e.g. "us" or "eu"
 PROCESSOR_ID = "99a4ab70462ed46e"
