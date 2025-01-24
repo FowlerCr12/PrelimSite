@@ -1,27 +1,31 @@
 // server.js
+require('dotenv').config(); // Load environment variables from .env
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config(); // load env variables
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./routes/authRoutes'); // or wherever your routes are
 
 const app = express();
 
-// If your frontend is on http://localhost:3000:
+// Change origins to your Droplet's IP if you want to allow requests from it or from anywhere else
 app.use(cors({
-    origin: ['159.223.146.87'],
-    credentials: true
+    origin: [
+        'http://159.223.146.87' // your droplet IP (or other domains if needed)
+    ],
+    credentials: true,
 }));
 
 app.use(express.json());
 
-// Our auth routes (login, register, protected route, etc.)
+// Example auth routes
 app.use('/auth', authRoutes);
 
-// A default route
+// Default route
 app.get('/', (req, res) => {
     res.send('Hello from the nJwt Auth Server!');
 });
 
-// Start server
+// Start the server on port 5000, bound to localhost (127.0.0.1)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, '127.0.0.1', () => {
+    console.log(`Server running on http://127.0.0.1:${PORT}`);
+});
