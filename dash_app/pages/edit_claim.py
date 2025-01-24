@@ -524,11 +524,11 @@ def save_claim(
     State("cid-store", "data"),
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, cid):
+def download_docx(n_clicks, claim_number):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
-    if not cid:
+    if not claim_number:
         return dash.no_update, "Invalid Claim ID.", "red"
 
     try:
@@ -538,7 +538,7 @@ def download_docx(n_clicks, cid):
 
         # Fetch the report_spaces_link for the given cid
         sql = "SELECT report_spaces_link FROM claims WHERE id = %s"
-        cursor.execute(sql, (cid,))
+        cursor.execute(sql, (claim_number,))
         result = cursor.fetchone()
 
         if not result or not result.get("report_spaces_link"):
@@ -552,7 +552,7 @@ def download_docx(n_clicks, cid):
             return dash.no_update, "Failed to download the report.", "red"
 
         # Generate a filename for the downloaded file
-        filename = f"Claim_{cid}_Report.docx"
+        filename = f"Claim_{claim_number}_Report.docx"
 
         # Return the file and success notification
         return dcc.send_bytes(response.content, filename=filename), "Report downloaded successfully.", "green"
