@@ -35,6 +35,7 @@ layout = html.Div(
         ),
     ],
     style={"padding": "20px"},
+    title=("CNC Report Generator")
 )
 
 @callback(
