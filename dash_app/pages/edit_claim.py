@@ -521,11 +521,13 @@ def save_claim(
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # This is the row ID, not the actual claim_number
+    State("cid-store", "data"),  # The row ID
     prevent_initial_call=True,
 )
-def download_docx(claim_number):
-    # 1) Fetch row
+def download_docx(n_clicks, claim_number):
+    if n_clicks is None or n_clicks == 0:
+        return dash.no_update, dash.no_update, dash.no_update
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
@@ -533,18 +535,16 @@ def download_docx(claim_number):
     cursor.close()
     conn.close()
     if not row:
-        return jsonify({"error": "Claim not found"}), 404
+        # Instead of a Flask response, return dash outputs
+        return dash.no_update, "Claim not found!", "red"
 
-    # 2) docxtpl usage
+    # docxtpl usage
     doc = DocxTemplate("/opt/PrelimSite/template.docx")
-
-    # The docxtpl placeholders look like {{ Policyholder }} in the Word file
     context = {
         "Policyholder": row["Policyholder"],
         "Date_Of_Loss": row["Date_Of_Loss"],
         # ...
     }
-
     doc.render(context)
 
     buffer = BytesIO()
@@ -552,11 +552,6 @@ def download_docx(claim_number):
     buffer.seek(0)
 
     filename = f"Claim_{claim_number}_Report.docx"
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=filename,
-        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
 
-
+    # For a Dash download, typically we do:
+    return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
