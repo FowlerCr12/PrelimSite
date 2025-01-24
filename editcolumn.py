@@ -19,6 +19,9 @@ def make_id_autoincrement():
 
     # Just change 'id' to be auto_increment.
     alter_sql = f"""
+        UPDATE claims
+        SET Review_Status = 'Processing'
+        WHERE Review_Status IS NULL;
         ALTER TABLE claims
         MODIFY Review_Status VARCHAR(255) NOT NULL DEFAULT 'Processing';
     """
