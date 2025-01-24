@@ -529,7 +529,7 @@ def download_docx(n_clicks, claim_number):
         return dash.no_update, dash.no_update, dash.no_update
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (claim_number,))
     row = cursor.fetchone()
     cursor.close()
