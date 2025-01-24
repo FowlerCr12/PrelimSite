@@ -508,6 +508,7 @@ def save_claim(
         ))
         conn.commit()
         msg = "Changes saved successfully!"
+        print("Changes saved successfully!")
     except Exception as e:
         conn.rollback()
         msg = f"Error saving changes: {e}"
