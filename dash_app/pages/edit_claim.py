@@ -521,49 +521,45 @@ def save_claim(
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # This is the row ID, not the actual claim_number
+    State("cid-store", "data"),  # <-- This is the DB row ID
     prevent_initial_call=True,
 )
-def download_docx(n_clicks, cid_value):
+def download_docx(n_clicks, row_id):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
-    if not cid_value:
-        return dash.no_update, "Invalid Claim ID.", "red"
+    conn = get_db_connection()
+    print("Getting db connection")
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    # Use 'WHERE id = %s' instead of 'WHERE claim_number = %s'
+    cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
+    print("selecting db row by id")
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    print("Connection closed")
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+    if not row:
+        return dash.no_update, "Claim not found!", "red"
 
-        # Get both fields: the actual user-friendly claim_number and the link
-        sql = "SELECT claim_number, report_spaces_link FROM claims WHERE id = %s"
-        cursor.execute(sql, (cid_value,))
-        row = cursor.fetchone()
+    # docxtpl usage
+    print("attempting to find template")
+    doc = DocxTemplate("/opt/PrelimSite/template.docx")
+    print("Gathered template")
+    context = {
+        "Policyholder": row["Policyholder"],
+        "Date_Of_Loss": row["Date_Of_Loss"],
+        # ...
+    }
+    doc.render(context)
+    print("sleeping 10 seconds")
+    time.sleep(10)
 
-        if not row:
-            return dash.no_update, "No such claim found.", "red"
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    time.sleep(10)
 
-        if not row.get("report_spaces_link"):
-            return dash.no_update, "Report link not found.", "red"
+    filename = f"Claim_{row['claim_number']}_Report.docx"
 
-        report_link = row["report_spaces_link"]
-        actual_claim_number = row["claim_number"]  # e.g. "ACME-1234"
-
-        # Fetch the DOCX
-        response = requests.get(report_link)
-        if response.status_code != 200:
-            return dash.no_update, "Failed to download the report.", "red"
-
-        # Now name the file with the real claim_number
-        filename = f"Claim_{actual_claim_number}_Report.docx"
-
-        return dcc.send_bytes(response.content, filename=filename), "Report downloaded successfully.", "green"
-
-    except Exception as e:
-        print(f"Error in download_docx callback: {e}")
-        return dash.no_update, "An error occurred while downloading the report.", "red"
-
-    finally:
-        cursor.close()
-        conn.close()
-
+    return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
