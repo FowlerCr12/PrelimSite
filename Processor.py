@@ -213,6 +213,25 @@ def store_claim_in_mysql(replacements, claim_number):
         conn.close()
         return False  # Skip processing if not in "Processing" status
 
+    # Determine claim type based on coverage values
+    coverage_building = replacements.get("Coverage-A_Building_Coverage", "0")
+    coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "0")
+    
+    # Remove $ and , from the values and convert to float
+    building_value = float(coverage_building.replace("$", "").replace(",", "") or "0")
+    contents_value = float(coverage_contents.replace("$", "").replace(",", "") or "0")
+    
+    if building_value == 0 and contents_value > 0:
+        claim_type = "Contents Only"
+    elif building_value > 0 and contents_value == 0:
+        claim_type = "Building Only"
+    elif building_value > 0 and contents_value > 0:
+        claim_type = "Building and Contents"
+    else:
+        claim_type = "Unknown"  # Default case if both are 0
+        
+    replacements["claim_type"] = claim_type
+
     update_sql = """
     UPDATE claims SET
         extracted_json = %s,
