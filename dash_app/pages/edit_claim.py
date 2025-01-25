@@ -209,9 +209,26 @@ def layout(cid=None, **other_kwargs):
                         style={"width": "45%"}
                     ),
                     dmc.TextInput(
+                        label="Coverage B Reserve",
+                        id="coverage-b-reserve",
+                        value=claim_data.get("Coverage_B_Reserve", ""),
+                        style={"width": "45%"}
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
                         label="Coverage A Advance",
                         id="coverage-a-advance",
                         value=claim_data.get("Coverage_A_Advance", ""),
+                        style={"width": "45%"}
+                    ),
+                    dmc.TextInput(
+                        label="Coverage B Advance",
+                        id="coverage-b-advance",
+                        value=claim_data.get("Coverage_B_Advance", ""),
                         style={"width": "45%"}
                     ),
                 ],
