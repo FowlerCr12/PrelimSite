@@ -17,13 +17,14 @@ def clear_table_rows():
     )
     cursor = conn.cursor()
 
-    # Truncate the table to remove all rows but keep the structure
-    clear_sql = f"TRUNCATE TABLE {TABLE_NAME};"
+    # Change to DESCRIBE command
+    describe_sql = f"DESCRIBE {TABLE_NAME};"
 
     try:
-        cursor.execute(clear_sql)
-        conn.commit()
-        print(f"[INFO] All rows in '{TABLE_NAME}' have been removed, columns remain intact.")
+        cursor.execute(describe_sql)
+        columns = cursor.fetchall()
+        for column in columns:
+            print(column)  # This will print each column's details
     except Exception as e:
         print(f"[ERROR] {e}")
     finally:
