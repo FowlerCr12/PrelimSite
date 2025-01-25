@@ -192,8 +192,7 @@ def reformat_mdy_to_ymd(date_str):
 
 def store_claim_in_mysql(replacements, claim_number):
     """
-    Insert or Update a row in 'claims' table with data from 'replacements' dict and 'claim_number'.
-    Safely re-formats date fields from MM/DD/YYYY to YYYY-MM-DD to avoid MySQL date errors.
+    Update an existing row in 'claims' table with data from 'replacements' dict and 'claim_number'.
     """
     conn = mysql.connector.connect(
         host=DB_HOST,
@@ -204,61 +203,40 @@ def store_claim_in_mysql(replacements, claim_number):
     )
     cursor = conn.cursor()
 
-    insert_sql = """
-    INSERT INTO claims (
-        claim_number, extracted_json,
-        Policyholder, Loss_Address, Date_Of_Loss, Insurer, Adjuster_Name, Policy_Number,
-        Claim_Type, Insured_Contact_Info, Adjuster_Contact_Info,
-        coverage_building, Coverage_A_Deductible, Coverage_A_Reserve, Coverage_A_Advance,
-        coverage_contents, Coverage_B_Deductible, Coverage_B_Reserve, Coverage_B_Advance,
-        Current_Claim_Status_Par, Claim_Assigned_Date, Claim_Contact_Date, Claim_Inspection_Date,
-        Preliminary_Report_Par, Insured_Communication_Paragraph, Claim_Reserve_Paragraph,
-        Insured_Concern_Paragraph, Adjuster_Response_Paragraph, Supporting_Doc_Paragraph,
-        Next_Steps_Paragraph, Final_Report_Paragraph, Claim_Summary_Par
-    )
-    VALUES (
-        %s, %s,
-        %s, %s, %s, %s, %s, %s,
-        %s, %s, %s,
-        %s, %s, %s, %s,
-        %s, %s, %s, %s,
-        %s, %s, %s, %s,
-        %s, %s, %s,
-        %s, %s, %s,
-        %s, %s, %s
-    )
-    ON DUPLICATE KEY UPDATE
-      extracted_json = VALUES(extracted_json),
-      Policyholder = VALUES(Policyholder),
-      Loss_Address = VALUES(Loss_Address),
-      Date_Of_Loss = VALUES(Date_Of_Loss),
-      Insurer = VALUES(Insurer),
-      Adjuster_Name = VALUES(Adjuster_Name),
-      Policy_Number = VALUES(Policy_Number),
-      Claim_Type = VALUES(Claim_Type),
-      Insured_Contact_Info = VALUES(Insured_Contact_Info),
-      Adjuster_Contact_Info = VALUES(Adjuster_Contact_Info),
-      coverage_building = VALUES(coverage_building),
-      Coverage_A_Deductible = VALUES(Coverage_A_Deductible),
-      Coverage_A_Reserve = VALUES(Coverage_A_Reserve),
-      Coverage_A_Advance = VALUES(Coverage_A_Advance),
-      coverage_contents = VALUES(coverage_contents),
-      Coverage_B_Deductible = VALUES(Coverage_B_Deductible),
-      Coverage_B_Reserve = VALUES(Coverage_B_Reserve),
-      Coverage_B_Advance = VALUES(Coverage_B_Advance),
-      Current_Claim_Status_Par = VALUES(Current_Claim_Status_Par),
-      Claim_Assigned_Date = VALUES(Claim_Assigned_Date),
-      Claim_Contact_Date = VALUES(Claim_Contact_Date),
-      Claim_Inspection_Date = VALUES(Claim_Inspection_Date),
-      Preliminary_Report_Par = VALUES(Preliminary_Report_Par),
-      Insured_Communication_Paragraph = VALUES(Insured_Communication_Paragraph),
-      Claim_Reserve_Paragraph = VALUES(Claim_Reserve_Paragraph),
-      Insured_Concern_Paragraph = VALUES(Insured_Concern_Paragraph),
-      Adjuster_Response_Paragraph = VALUES(Adjuster_Response_Paragraph),
-      Supporting_Doc_Paragraph = VALUES(Supporting_Doc_Paragraph),
-      Next_Steps_Paragraph = VALUES(Next_Steps_Paragraph),
-      Final_Report_Paragraph = VALUES(Final_Report_Paragraph),
-      Claim_Summary_Par = VALUES(Claim_Summary_Par)
+    update_sql = """
+    UPDATE claims SET
+        extracted_json = %s,
+        Policyholder = %s,
+        Loss_Address = %s,
+        Date_Of_Loss = %s,
+        Insurer = %s,
+        Adjuster_Name = %s,
+        Policy_Number = %s,
+        Claim_Type = %s,
+        Insured_Contact_Info = %s,
+        Adjuster_Contact_Info = %s,
+        coverage_building = %s,
+        Coverage_A_Deductible = %s,
+        Coverage_A_Reserve = %s,
+        Coverage_A_Advance = %s,
+        coverage_contents = %s,
+        Coverage_B_Deductible = %s,
+        Coverage_B_Reserve = %s,
+        Coverage_B_Advance = %s,
+        Current_Claim_Status_Par = %s,
+        Claim_Assigned_Date = %s,
+        Claim_Contact_Date = %s,
+        Claim_Inspection_Date = %s,
+        Preliminary_Report_Par = %s,
+        Insured_Communication_Paragraph = %s,
+        Claim_Reserve_Paragraph = %s,
+        Insured_Concern_Paragraph = %s,
+        Adjuster_Response_Paragraph = %s,
+        Supporting_Doc_Paragraph = %s,
+        Next_Steps_Paragraph = %s,
+        Final_Report_Paragraph = %s,
+        Claim_Summary_Par = %s
+    WHERE claim_number = %s
     """
 
     # Convert the replacements dict to JSON for storage
@@ -302,9 +280,8 @@ def store_claim_in_mysql(replacements, claim_number):
     Claim_Contact_Date = reformat_mdy_to_ymd(raw_Claim_Contact_Date)
     Claim_Inspection_Date = reformat_mdy_to_ymd(raw_Claim_Inspection_Date)
 
-    # 3) Pack the parameters for the INSERT statement
+    # 3) Pack the parameters for the UPDATE statement
     data_tuple = (
-        claim_number,
         extracted_json_str,
         Policyholder,
         Loss_Address,
@@ -335,11 +312,12 @@ def store_claim_in_mysql(replacements, claim_number):
         Supporting_Doc_Paragraph,
         Next_Steps_Paragraph,
         Final_Report_Paragraph,
-        Claim_Summary_Par
+        Claim_Summary_Par,
+        claim_number
     )
 
-    # 4) Execute INSERT / UPDATE
-    cursor.execute(insert_sql, data_tuple)
+    # 4) Execute UPDATE
+    cursor.execute(update_sql, data_tuple)
     conn.commit()
 
     # 5) Close
