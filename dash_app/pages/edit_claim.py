@@ -644,13 +644,8 @@ def download_docx(n_clicks, row_id):
     if not row:
         return dash.no_update, "Claim not found!", "red"
 
-    # Get the claim number from the database
-    claim_number = row.get('claim_number', '')
-    if not claim_number:
-        return dash.no_update, "No claim number found!", "red"
-
-    # Use claim_number for filename
-    filename = f"Claim_{claim_number}_Report.docx"
+    # Use claim_number for filename instead of row_id
+    filename = f"Claim_{row['claim_number']}_Report.docx"
     
     # 2) Build a replacements dict for naive placeholders like {{Policyholder}}
     # In your Word template, you'd have placeholders literally like "{{Policyholder}}"
@@ -712,4 +707,4 @@ def download_docx(n_clicks, row_id):
     buffer.seek(0)
 
     # 6) Return a dcc.Download object + success message
-    return dcc.send_bytes(buffer.getvalue(), filename), f"Report for Claim {claim_number} downloaded successfully.", "green"
+    return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
