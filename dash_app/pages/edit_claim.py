@@ -625,23 +625,17 @@ def replace_in_paragraphs(doc, replacements):
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # The row ID, or claim_number, whichever you are using
+    State("cid-store", "data"),
     prevent_initial_call=True,
 )
 def download_docx(n_clicks, row_id):
     if not n_clicks:
         return dash.no_update, dash.no_update, dash.no_update
 
-    # 1) Fetch row from DB
+    # Fetch row from DB
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     
-    # if 'row_id' is truly the `id` column:
-    # cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
-    #
-    # if 'row_id' is actually 'claim_number', do:
-    # cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (row_id,))
-
     cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
     row = cursor.fetchone()
     cursor.close()
@@ -650,6 +644,9 @@ def download_docx(n_clicks, row_id):
     if not row:
         return dash.no_update, "Claim not found!", "red"
 
+    # Use claim_number for filename instead of row_id
+    filename = f"Claim_{row['claim_number']}_Report.docx"
+    
     # 2) Build a replacements dict for naive placeholders like {{Policyholder}}
     # In your Word template, you'd have placeholders literally like "{{Policyholder}}"
     replacements = {
@@ -709,7 +706,5 @@ def download_docx(n_clicks, row_id):
     doc.save(buffer)
     buffer.seek(0)
 
-    filename = f"Claim_{row_id}_Report.docx"
-    
     # 6) Return a dcc.Download object + success message
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
