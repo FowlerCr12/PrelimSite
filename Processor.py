@@ -672,7 +672,12 @@ def process_from_db():
 
             if docx_url:
                 # update DB
-                up_sql = "UPDATE claims SET report_spaces_link=%s WHERE claim_number=%s"
+                p_sql = """
+                    UPDATE claims
+                    SET report_spaces_link = %s,
+                    Review_Status = 'In Review'
+                    WHERE claim_number = %s
+                """
                 cursor.execute(up_sql, (docx_url, claim_number))
                 conn.commit()
                 processed_claims.append((claim_number, docx_url))
