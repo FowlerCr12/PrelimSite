@@ -217,9 +217,17 @@ def store_claim_in_mysql(replacements, claim_number):
     coverage_building = replacements.get("Coverage-A_Building_Coverage", "0")
     coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "0")
     
-    # Remove $ and , from the values and convert to float
-    building_value = float(coverage_building.replace("$", "").replace(",", "") or "0")
-    contents_value = float(coverage_contents.replace("$", "").replace(",", "") or "0")
+    # More robust cleaning of values
+    def clean_currency(value):
+        try:
+            # Remove all non-numeric characters except decimal point
+            cleaned = ''.join(c for c in str(value) if c.isdigit() or c == '.')
+            return float(cleaned or "0")
+        except (ValueError, TypeError):
+            return 0.0
+    
+    building_value = clean_currency(coverage_building)
+    contents_value = clean_currency(coverage_contents)
     
     if building_value == 0 and contents_value > 0:
         claim_type = "Contents Only"
