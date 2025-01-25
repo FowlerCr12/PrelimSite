@@ -4,13 +4,10 @@ from dash import html, dcc, Input, Output, State, callback
 import dash_mantine_components as dmc
 import pymysql
 import requests  # Imported for fetching the DOCX file
+from docxtpl import DocxTemplate
 from db import get_db_connection
-import time
 from io import BytesIO
-import re
-from docx import Document
-from dotenv import load_dotenv
-load_dotenv()
+import time
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
@@ -58,15 +55,6 @@ def layout(cid=None, **other_kwargs):
 
             html.H3(f"Editing Claim: {cid}"),
             dmc.Text("Please fill out the fields below (data loaded from DB)."),
-            dmc.Button(
-                "View Binder PDF",
-                component="a",  
-                href=claim_data.get("binder_spaces_link", ""),  # or ""
-                target="_blank",
-                color="blue",
-                variant="outline",
-                mt="md"
-            ),
 
             # ========== Basic Fields in columns ==========
             dmc.Group(
@@ -142,7 +130,7 @@ def layout(cid=None, **other_kwargs):
                     dmc.TextInput(
                         label="Claim Type",
                         id="claim-type",
-                        value=claim_data.get("Claim_Type", ""),
+                        value=claim_data.get("claim_type", ""),
                         placeholder="e.g. Building & Contents",
                         style={"width": "45%"}
                     ),
@@ -331,18 +319,6 @@ def layout(cid=None, **other_kwargs):
                 placeholder="A concise summary of the claim...",
                 minRows=3
             ),
-            dmc.Select(
-            label="Review Status",
-            id="review-status",
-            value=claim_data.get("Review_Status", "In Review"),
-            data=[
-                {"label": "In Review",  "value": "In Review"},
-                {"label": "Reviewed",   "value": "Reviewed"},
-                
-                {"label": "Needs Work", "value": "Needs Work"},
-            ],
-            style={"width": "45%"}
-        ),
 
             # ========== Save Button & Confirmation ==========
             dmc.Group(
@@ -356,7 +332,6 @@ def layout(cid=None, **other_kwargs):
                 id="save-confirmation",
                 style={"color": "green", "marginTop": "1rem"}
             ),
-            
 
             # ======= Download Report Button =======
             dmc.Button(
@@ -425,7 +400,6 @@ def layout(cid=None, **other_kwargs):
         State("next-steps-paragraph", "value"),
         State("final-report-paragraph", "value"),
         State("claim-summary-par", "value"),
-        State("review-status", "value"),
     ],
     prevent_initial_call=True
 )
@@ -440,7 +414,7 @@ def save_claim(
     claim_assigned_date, claim_contact_date, claim_inspection_date,
     preliminary_report_par, insured_communication_paragraph, claim_reserve_paragraph,
     insured_concern_paragraph, adjuster_response_paragraph, supporting_doc_paragraph,
-    next_steps_paragraph, final_report_paragraph, claim_summary_par, review_status
+    next_steps_paragraph, final_report_paragraph, claim_summary_par
 ):
     """
     When the user clicks 'Save Changes', update the database with the new values.
@@ -467,7 +441,7 @@ def save_claim(
             Insurer = %s,
             Adjuster_Name = %s,
             Policy_Number = %s,
-            Claim_Type = %s,
+            claim_type = %s,
             Adjuster_Contact_Info = %s,
             Insured_Contact_Info = %s,
             coverage_building = %s,
@@ -491,8 +465,7 @@ def save_claim(
             Supporting_Doc_Paragraph = %s,
             Next_Steps_Paragraph = %s,
             Final_Report_Paragraph = %s,
-            Claim_Summary_Par = %s,
-            Review_Status = %s
+            Claim_Summary_Par = %s
 
         WHERE id = %s
         """
@@ -530,7 +503,6 @@ def save_claim(
             next_steps_paragraph,
             final_report_paragraph,
             claim_summary_par,
-            review_status,
 
             # WHERE
             claim_id
@@ -547,152 +519,47 @@ def save_claim(
 
     return msg
 
-def paragraph_replace_text(paragraph, regex, replace_str):
-    """
-    Replaces matches for 'regex' with 'replace_str' across runs in a paragraph.
-    """
-    while True:
-        text = paragraph.text
-        match = regex.search(text)
-        if not match:
-            break
-
-        runs = iter(paragraph.runs)
-        start, end = match.start(), match.end()
-
-        # Advance past runs that do not contain the start of the match
-        for run in runs:
-            run_len = len(run.text)
-            if start < run_len:
-                break
-            start -= run_len
-            end -= run_len
-
-        run_text = run.text
-        run_len = len(run_text)
-        # Replace the part of the match in this run with the replacement text
-        run.text = f"{run_text[:start]}{replace_str}{run_text[end:]}"
-        end -= run_len
-
-        # Remove the remainder of the matched text from subsequent runs
-        for run in runs:
-            if end <= 0:
-                break
-            run_text = run.text
-            run_len = len(run_text)
-            run.text = run_text[end:]
-            end -= run_len
-
-
-def replace_in_paragraphs(doc, replacements):
-    """
-    Iterates over all paragraphs and tables in the doc, performing regex replacements.
-    """
-    # Replace in normal paragraphs
-    for paragraph in doc.paragraphs:
-        for pattern, replace_str in replacements.items():
-            regex = re.compile(pattern)
-            paragraph_replace_text(paragraph, regex, replace_str)
-
-    # Replace in tables as well
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for pattern, replace_str in replacements.items():
-                        regex = re.compile(pattern)
-                        paragraph_replace_text(paragraph, regex, replace_str)
-
 @callback(
     Output("download-docx", "data"),
     Output("download-notification", "children"),
     Output("download-notification", "color"),
     Input("download-docx-button", "n_clicks"),
-    State("cid-store", "data"),  # The row ID, or claim_number, whichever you are using
+    State("cid-store", "data"),  # The row ID
     prevent_initial_call=True,
 )
 def download_docx(n_clicks, row_id):
-    if not n_clicks:
+    if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
-    # 1) Fetch row from DB
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    
-    # if 'row_id' is truly the `id` column:
-    # cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
-    #
-    # if 'row_id' is actually 'claim_number', do:
-    # cursor.execute("SELECT * FROM claims WHERE claim_number = %s", (row_id,))
-
     cursor.execute("SELECT * FROM claims WHERE id = %s", (row_id,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()
-
     if not row:
+        # Instead of a Flask response, return dash outputs
         return dash.no_update, "Claim not found!", "red"
 
-    # 2) Build a replacements dict for naive placeholders like {{Policyholder}}
-    # In your Word template, you'd have placeholders literally like "{{Policyholder}}"
-    replacements = {
-        r"\{\{Policyholder\}\}": row.get("Policyholder", ""),
-        r"\{\{DateOfLoss\}\}": row.get("Date_Of_Loss", ""),
-        r"\{\{Insurer_Name\}\}": row.get("Insurer", ""),
-        r"\{\{Coverage_A_Advance\}\}": row.get("Coverage_A_Advance", ""),
-        r"\{\{Coverage_A_Reserve\}\}": row.get("Coverage_A_Reserve", ""),
-        r"\{\{Coverage_A_Deductible\}\}": row.get("Coverage_A_Deductible", ""),
-        r"\{\{coverage_building\}\}": row.get("coverage_building", ""),
-        r"\{\{claim_type\}\}": row.get("claim_type", ""),
-        r"\{\{Insured_Contact_Info\}\}": row.get("Insured_Contact_Info", ""),
-        r"\{\{Adjuster_Contact_Info\}\}": row.get("Adjuster_Contact_Info", ""),
-        r"\{\{Current_Claim_Status_Par\}\}": row.get("Current_Claim_Status_Par", ""),
-        r"\{\{Claim_Assigned_Date\}\}": row.get("Claim_Assigned_Date", ""),
-        r"\{\{Claim_Contact_Date\}\}": row.get("Claim_Contact_Date", ""),
-        r"\{\{Claim_Inspection_Date\}\}": row.get("Claim_Inspection_Date", ""),
-        r"\{\{Preliminary_Report_Par\}\}": row.get("Preliminary_Report_Par", ""),
-        r"\{\{Insured_Communication_Paragraph\}\}": row.get("Insured_Communication_Paragraph", ""),
-        r"\{\{Claim_Reserve_Paragraph\}\}": row.get("Claim_Reserve_Paragraph", ""),
-        r"\{\{Insured_Concern_Paragraph\}\}": row.get("Insured_Concern_Paragraph", ""),
-        r"\{\{Next_Steps_Paragraph\}\}": row.get("Next_Steps_Paragraph", ""),
-        r"\{\{Final_Report_Paragraph\}\}": row.get("Final_Report_Paragraph", ""),
-        r"\{\{Claim_Summary_Par\}\}": row.get("Claim_Summary_Par", ""),
-        r"\{\{Supporting_Doc_Paragraph\}\}": row.get("Supporting_Doc_Paragraph", ""),
-        r"\{\{Adjuster_Response_Paragraph\}\}": row.get("Adjuster_Response_Paragraph", ""),
-        r"\{\{coverage_contents\}\}": row.get("coverage_contents", ""),
-        r"\{\{Coverage_B_Deductible\}\}": row.get("Coverage_B_Deductible", ""),
-        r"\{\{Coverage_B_Reserve\}\}": row.get("Coverage_B_Reserve", ""),
-        r"\{\{Coverage_B_Advance\}\}": row.get("Coverage_B_Advance", ""),
-        r"\{\{Adjuster_Name\}\}": row.get("Adjuster_Name", ""),
-        r"\{\{Policy_Number\}\}": row.get("Policy_Number", ""),
-        r"\{\{claim_number\}\}": row.get("claim_number", ""),
-        r"\{\{loss_address\}\}": row.get("Loss_Address", ""),
-        
-
-
-        
-        # ... add as many placeholders as you used in your .docx
-        # e.g. r"\{\{Insurer\}\}": row.get("Insurer", "")
+    # docxtpl usage
+    print("attempting to find template")
+    doc = DocxTemplate("/opt/PrelimSite/template.docx")
+    print("Gathered template")
+    context = {
+        "Policyholder": row["Policyholder"],
+        "Date_Of_Loss": row["Date_Of_Loss"],
+        # ...
     }
+    doc.render(context)
+    time.sleep(10)
+    
 
-    # 3) Load the Word .docx template from disk
-    # Make sure you actually have this file, and your placeholders in the doc are e.g. "{{Policyholder}}"
-    from docx import Document
-    template_path = "/opt/PrelimSite/template.docx"
-    doc = Document(template_path)
-
-    # 4) Perform the naive placeholder replacements
-    replace_in_paragraphs(doc, replacements)
-
-    # (Optional) Sleep for debugging or demonstration
-    time.sleep(2)
-
-    # 5) Save to in-memory buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
+    time.sleep(10)
 
-    filename = f"Claim_{row_id}_Report.docx"
-    
-    # 6) Return a dcc.Download object + success message
+    filename = f"Claim_{claim_number}_Report.docx"
+
+    # For a Dash download, typically we do:
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"

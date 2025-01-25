@@ -258,7 +258,7 @@ def store_claim_in_mysql(replacements, claim_number):
         Insurer = %s,
         Adjuster_Name = %s,
         Policy_Number = %s,
-        Claim_Type = %s,
+        claim_type = %s,
         Insured_Contact_Info = %s,
         Adjuster_Contact_Info = %s,
         coverage_building = %s,
@@ -296,7 +296,7 @@ def store_claim_in_mysql(replacements, claim_number):
     Insurer = replacements.get("Insurer_Name", "")
     Adjuster_Name = replacements.get("Adjuster_Name", "")
     Policy_Number = replacements.get("Policy_Number", "")
-    claim_type = replacements.get("claim_type", replacements.get("Claim_Type", ""))
+    Claim_Type = replacements.get("claim_type", replacements.get("Claim_Type", ""))
     Insured_Contact_Info = replacements.get("Policyholder_Contact_Info", "")
     Adjuster_Contact_Info = replacements.get("Adjuster_Contact_Info", "")
     coverage_building = replacements.get("Coverage-A_Building_Coverage", "")
@@ -336,7 +336,7 @@ def store_claim_in_mysql(replacements, claim_number):
         Insurer,
         Adjuster_Name,
         Policy_Number,
-        claim_type,
+        Claim_Type,
         Insured_Contact_Info,
         Adjuster_Contact_Info,
         coverage_building,
