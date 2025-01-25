@@ -41,6 +41,13 @@ def layout(cid=None, **other_kwargs):
                 row = cursor.fetchone()
                 if row:
                     claim_data = row
+                    print("DEBUG: Coverage Values from DB:")
+                    print(f"Coverage A Deductible: {row.get('Coverage_A_Deductible')}")
+                    print(f"Coverage A Reserve: {row.get('Coverage_A_Reserve')}")
+                    print(f"Coverage A Advance: {row.get('Coverage_A_Advance')}")
+                    print(f"Coverage B Deductible: {row.get('Coverage_B_Deductible')}")
+                    print(f"Coverage B Reserve: {row.get('Coverage_B_Reserve')}")
+                    print(f"Coverage B Advance: {row.get('Coverage_B_Advance')}")
             except Exception as e:
                 print(f"Error fetching claim data for CID={cid}: {e}")
             finally:
@@ -420,6 +427,8 @@ def layout(cid=None, **other_kwargs):
         State("coverage-a-advance", "value"),
         State("coverage-b", "value"),
         State("coverage-b-deductible", "value"),
+        State("coverage-b-reserve", "value"),
+        State("coverage-b-advance", "value"),
         State("Current_Claim_Status_Par", "value"),
         # New Fields
         State("claim-assigned-date", "value"),
@@ -440,12 +449,11 @@ def layout(cid=None, **other_kwargs):
 )
 def save_claim(
     n_clicks, cid,
-    # Existing
     claim_number, policyholder, loss_address, date_of_loss, insurer, adjuster_name,
     policy_number, claim_type, contact_info_adjuster, contact_info_insured,
     coverage_a, coverage_a_deductible, coverage_a_reserve, coverage_a_advance,
-    coverage_b, coverage_b_deductible, current_claim_status_par,
-    # New
+    coverage_b, coverage_b_deductible, coverage_b_reserve, coverage_b_advance,
+    current_claim_status_par,
     claim_assigned_date, claim_contact_date, claim_inspection_date,
     preliminary_report_par, insured_communication_paragraph, claim_reserve_paragraph,
     insured_concern_paragraph, adjuster_response_paragraph, supporting_doc_paragraph,
@@ -476,7 +484,7 @@ def save_claim(
             Insurer = %s,
             Adjuster_Name = %s,
             Policy_Number = %s,
-            Claim_Type = %s,
+            claim_type = %s,
             Adjuster_Contact_Info = %s,
             Insured_Contact_Info = %s,
             coverage_building = %s,
@@ -485,13 +493,12 @@ def save_claim(
             Coverage_A_Advance = %s,
             coverage_contents = %s,
             Coverage_B_Deductible = %s,
+            Coverage_B_Reserve = %s,
+            Coverage_B_Advance = %s,
             Current_Claim_Status_Par = %s,
-
-            -- New fields
             Claim_Assigned_Date = %s,
             Claim_Contact_Date = %s,
             Claim_Inspection_Date = %s,
-
             Preliminary_Report_Par = %s,
             Insured_Communication_Paragraph = %s,
             Claim_Reserve_Paragraph = %s,
@@ -502,7 +509,6 @@ def save_claim(
             Final_Report_Paragraph = %s,
             Claim_Summary_Par = %s,
             Review_Status = %s
-
         WHERE id = %s
         """
 
@@ -524,6 +530,8 @@ def save_claim(
             coverage_a_advance,
             coverage_b,
             coverage_b_deductible,
+            coverage_b_reserve,
+            coverage_b_advance,
             current_claim_status_par,
 
             # New fields
