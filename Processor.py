@@ -638,6 +638,7 @@ def process_from_db():
       AND notes_spaces_link IS NOT NULL
       AND notes_spaces_link != ''
       AND (report_spaces_link IS NULL OR report_spaces_link = '')
+      AND Review_Status = 'Processing'
     """
     cursor.execute(select_sql)
     rows = cursor.fetchall()
