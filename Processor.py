@@ -217,17 +217,25 @@ def store_claim_in_mysql(replacements, claim_number):
     coverage_building = replacements.get("Coverage-A_Building_Coverage", "0")
     coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "0")
     
+    print(f"Raw building coverage: {coverage_building}")
+    print(f"Raw contents coverage: {coverage_contents}")
+    
     # More robust cleaning of values
     def clean_currency(value):
         try:
             # Remove all non-numeric characters except decimal point
             cleaned = ''.join(c for c in str(value) if c.isdigit() or c == '.')
+            print(f"Cleaned value: {cleaned} from original: {value}")
             return float(cleaned or "0")
         except (ValueError, TypeError):
+            print(f"Error converting value: {value}")
             return 0.0
     
     building_value = clean_currency(coverage_building)
     contents_value = clean_currency(coverage_contents)
+    
+    print(f"Final building value: {building_value}")
+    print(f"Final contents value: {contents_value}")
     
     if building_value == 0 and contents_value > 0:
         claim_type = "Contents Only"
@@ -238,6 +246,7 @@ def store_claim_in_mysql(replacements, claim_number):
     else:
         claim_type = "Unknown"  # Default case if both are 0
         
+    print(f"Determined claim type: {claim_type}")
     replacements["claim_type"] = claim_type
 
     update_sql = """
