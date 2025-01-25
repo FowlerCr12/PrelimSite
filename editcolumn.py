@@ -7,7 +7,7 @@ DATABASE = "defaultdb"
 TABLE_NAME = "claims"  # <-- change to your table name
 PORT = 25060            # If needed, set your custom port here
 
-def make_id_autoincrement():
+def clear_table_rows():
     conn = mysql.connector.connect(
         host=HOST,
         port=PORT,
@@ -17,22 +17,18 @@ def make_id_autoincrement():
     )
     cursor = conn.cursor()
 
-    # Just change 'id' to be auto_increment.
-    alter_sql = f"""
-        UPDATE claims
-        SET Review_Status = 'Processing'
-        WHERE Review_Status = 'In Review';
-    """
+    # Truncate the table to remove all rows but keep the structure
+    clear_sql = f"TRUNCATE TABLE {TABLE_NAME};"
 
     try:
-        cursor.execute(alter_sql)
+        cursor.execute(clear_sql)
         conn.commit()
-        print("[INFO] 'id' column is now AUTO_INCREMENT.")
+        print(f"[INFO] All rows in '{TABLE_NAME}' have been removed, columns remain intact.")
     except Exception as e:
         print(f"[ERROR] {e}")
-
-    cursor.close()
-    conn.close()
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == "__main__":
-    make_id_autoincrement()
+    clear_table_rows()
