@@ -235,7 +235,8 @@ def store_claim_in_mysql(replacements, claim_number):
         Supporting_Doc_Paragraph = %s,
         Next_Steps_Paragraph = %s,
         Final_Report_Paragraph = %s,
-        Claim_Summary_Par = %s
+        Claim_Summary_Par = %s,
+        Review_Status = 'In Review'
     WHERE claim_number = %s
     """
 
