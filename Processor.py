@@ -203,6 +203,16 @@ def store_claim_in_mysql(replacements, claim_number):
     )
     cursor = conn.cursor()
 
+    # First, check if the claim is in "Processing" status
+    check_sql = "SELECT Review_Status FROM claims WHERE claim_number = %s"
+    cursor.execute(check_sql, (claim_number,))
+    result = cursor.fetchone()
+    
+    if not result or result[0] != "Processing":
+        cursor.close()
+        conn.close()
+        return False  # Skip processing if not in "Processing" status
+
     update_sql = """
     UPDATE claims SET
         extracted_json = %s,
