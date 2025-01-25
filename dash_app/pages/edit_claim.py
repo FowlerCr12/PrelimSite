@@ -58,15 +58,6 @@ def layout(cid=None, **other_kwargs):
 
             html.H3(f"Editing Claim: {cid}"),
             dmc.Text("Please fill out the fields below (data loaded from DB)."),
-            dmc.Button(
-                "View Binder PDF",
-                component="a",  
-                href=claim_data.get("binder_spaces_link", ""),  # or ""
-                target="_blank",
-                color="blue",
-                variant="outline",
-                mt="md"
-            ),
 
             # ========== Basic Fields in columns ==========
             dmc.Group(
