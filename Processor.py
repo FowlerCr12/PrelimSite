@@ -673,7 +673,7 @@ def process_from_db():
 
             if docx_url:
                 # update DB
-                p_sql = """
+                up_sql = """
                     UPDATE claims
                     SET report_spaces_link = %s,
                     Review_Status = 'In Review'
