@@ -104,9 +104,16 @@ def layout(cid=None, **other_kwargs):
 
     def get_style(field_id, base_style=None):
         base_style = base_style or {}
+        value = claim_data.get(field_id, "").strip()  # Get the field value
         confidence = get_confidence(field_id)
+        
         print(f"DEBUG: Style for {field_id} - confidence: {confidence}")
-        if confidence < 0.95:
+        
+        if not value:  # Check if field is blank or only whitespace
+            print(f"DEBUG: Applying yellow style to {field_id} (blank field)")
+            base_style["backgroundColor"] = "#fff3e0"  # Light yellow
+            base_style["borderColor"] = "#ffa726"      # Orange/yellow
+        elif confidence < 0.96:
             print(f"DEBUG: Applying red style to {field_id}")
             base_style["backgroundColor"] = "#ffebee"  # Light red
             base_style["borderColor"] = "#ef5350"      # Red
@@ -114,6 +121,7 @@ def layout(cid=None, **other_kwargs):
             print(f"DEBUG: Applying green style to {field_id}")
             base_style["backgroundColor"] = "#e8f5e9"  # Light green
             base_style["borderColor"] = "#66bb6a"      # Green
+            
         return base_style
 
     return dmc.Stack(
@@ -455,6 +463,22 @@ def layout(cid=None, **other_kwargs):
         "onClick": "function() { return false; }"
     },
 )
+
+            # Add this near your other buttons
+            dmc.Group(
+                [
+                    dmc.Button(
+                        "View Binder PDF",
+                        id="view-binder-button",
+                        color="blue",
+                        leftIcon=html.I(className="fas fa-file-pdf"),  # Optional: adds PDF icon
+                        href=claim_data.get('binder_spaces_link', '#'),
+                        target="_blank"  # Opens in new tab
+                    ),
+                ],
+                justify="flex-end",
+                style={"marginTop": "1rem"}
+            ),
 
         ],
         # Removed gap or spacing usage entirely
