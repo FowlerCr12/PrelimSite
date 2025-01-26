@@ -11,6 +11,7 @@ import re
 from docx import Document
 from dotenv import load_dotenv
 import json
+from dash_iconify import DashIconify
 load_dotenv()
 
 dash.register_page(__name__, path_template="/edit/<cid>")
@@ -160,10 +161,61 @@ def layout(cid=None, **other_kwargs):
         [
             store_cid,  # hidden, just holds the cid for the callback
 
-            # Create a Group to hold both the heading and the button
+            # Create a Group to hold the heading, button, and tooltip
             dmc.Group(
                 [
-                    html.H3(f"Editing Claim: {cid}", style={"margin": 0}),  # Remove default margin
+                    # Left side with heading and tooltip
+                    dmc.Group(
+                        [
+                            html.H3(f"Editing Claim: {cid}", style={"margin": 0}),
+                            dmc.Tooltip(
+                                label=dmc.List(
+                                    spacing="xs",
+                                    size="sm",
+                                    children=[
+                                        dmc.ListItem(
+                                            "Green: Verified data (confidence > 96%)",
+                                            icon=dmc.ThemeIcon(
+                                                DashIconify(icon="radix-icons:check", width=16),
+                                                radius="xl",
+                                                color="green",
+                                                size=24,
+                                            ),
+                                        ),
+                                        dmc.ListItem(
+                                            "Yellow: Empty field needs attention",
+                                            icon=dmc.ThemeIcon(
+                                                DashIconify(icon="radix-icons:question-mark", width=16),
+                                                radius="xl",
+                                                color="yellow",
+                                                size=24,
+                                            ),
+                                        ),
+                                        dmc.ListItem(
+                                            "Red: Low confidence data (< 96%)",
+                                            icon=dmc.ThemeIcon(
+                                                DashIconify(icon="radix-icons:exclamation-triangle", width=16),
+                                                radius="xl",
+                                                color="red",
+                                                size=24,
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                multiline=True,
+                                width=300,
+                                children=dmc.ThemeIcon(
+                                    DashIconify(icon="radix-icons:question-mark", width=16),
+                                    radius="xl",
+                                    color="gray",
+                                    size=24,
+                                    style={"cursor": "help"}
+                                ),
+                            ),
+                        ],
+                        spacing="xs",
+                    ),
+                    # Right side button
                     dmc.Button(
                         "View Binder PDF",
                         id="view-binder-button",
@@ -172,8 +224,8 @@ def layout(cid=None, **other_kwargs):
                         leftSection=html.I(className="fas fa-file-pdf"),
                     ),
                 ],
-                justify="space-between",  # Changed from position="apart" to justify="space-between"
-                align="center",    # This vertically centers the items
+                justify="space-between",
+                align="center",
             ),
             
             dmc.Text("Please fill out the fields below (data loaded from DB)."),
