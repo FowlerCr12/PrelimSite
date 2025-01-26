@@ -203,7 +203,7 @@ def layout(cid=None, **other_kwargs):
                                     ],
                                 ),
                                 multiline=True,
-                                width=300,
+                                maw=300,
                                 children=dmc.ThemeIcon(
                                     DashIconify(icon="radix-icons:question-mark", width=16),
                                     radius="xl",
