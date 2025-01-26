@@ -213,7 +213,7 @@ def layout(cid=None, **other_kwargs):
                                 ),
                             ),
                         ],
-                        spacing="xs",
+                        gap="xs",
                     ),
                     # Right side button
                     dmc.Button(
