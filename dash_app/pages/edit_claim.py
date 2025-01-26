@@ -80,6 +80,13 @@ def layout(cid=None, **other_kwargs):
         "coverage-b-advance": "Coverage-B-Contents_Advance",
         "policyholder": "Policyholder_Name",
         "claim-number": "Claim_Number",
+        "date-of-loss": "Date_Of_Loss",
+        "insurer": "Insurer",
+        "adjuster-name": "Adjuster_Name",
+        "policy-number": "Policy_Number",
+        "claim-type": "Claim_Type",
+        "contact-info-adjuster": "Adjuster_Contact_Info",
+        "contact-info-insured": "Insured_Contact_Info",
         # Add more mappings as needed
     }
 
@@ -165,14 +172,14 @@ def layout(cid=None, **other_kwargs):
                         id="insurer",
                         value=claim_data.get("Insurer", ""),
                         placeholder="e.g. Acme Insurance",
-                        style={"width": "45%"}
+                        style=get_style("insurer", {"width": "45%"}),
                     ),
                     dmc.TextInput(
                         label="Adjuster Name",
                         id="adjuster-name",
                         value=claim_data.get("Adjuster_Name", ""),
                         placeholder="e.g. John Doe",
-                        style={"width": "45%"}
+                        style=get_style("adjuster-name", {"width": "45%"}),
                     ),
                 ],
                 justify="space-between"
@@ -185,15 +192,14 @@ def layout(cid=None, **other_kwargs):
                         id="policy-number",
                         value=claim_data.get("Policy_Number", ""),
                         placeholder="Policy #",
-                        style={"width": "45%"}
+                        style=get_style("policy-number", {"width": "45%"}),
                     ),
                     dmc.TextInput(
                         label="Claim Type",
                         id="claim-type",
                         value=claim_data.get("claim_type", ""),
                         placeholder="Building Only/Contents Only/Building and Contents",
-                        style={"width": "45%"},
-                        readOnly=True
+                        style=get_style("claim-type", {"width": "45%"}),
                     ),
                 ],
                 justify="space-between"
@@ -206,14 +212,14 @@ def layout(cid=None, **other_kwargs):
                         id="contact-info-adjuster",
                         value=claim_data.get("Adjuster_Contact_Info", ""),
                         placeholder="Phone / Email",
-                        style={"width": "45%"}
+                        style=get_style("contact-info-adjuster", {"width": "45%"}),
                     ),
                     dmc.TextInput(
                         label="Contact Information (Insured)",
                         id="contact-info-insured",
                         value=claim_data.get("Insured_Contact_Info", ""),
                         placeholder="Phone / Email",
-                        style={"width": "45%"}
+                        style=get_style("contact-info-insured", {"width": "45%"}),
                     ),
                 ],
                 justify="space-between"
