@@ -4,6 +4,7 @@ import requests
 import PyPDF2
 import boto3
 import mysql.connector  # for MySQL
+import psutil
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -42,6 +43,14 @@ DB_NAME = "defaultdb"
 ###########################################
 # DO SPACES HELPERS
 ###########################################
+def check_system_resources():
+    """Return False if memory usage exceeds 90%"""
+    mem = psutil.virtual_memory()
+    if mem.percent > 90:
+        print(f"[WARN] High memory usage: {mem.percent}%")
+        return False
+    return True
+
 def get_s3_client():
     session = boto3.session.Session()
     return session.client(
@@ -87,7 +96,12 @@ options = webdriver.ChromeOptions()
 options.add_argument("--headless=new")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-gpu")  # Disable GPU acceleration
 options.add_argument("--window-size=1920,1080")
+options.add_argument("--disable-software-rasterizer")  # Disable unnecessary components
+options.add_argument("--disable-extensions")
+options.add_argument("--disable-infobars")
+options.add_argument("--disable-breakpad")
 
 prefs = {
     "download.prompt_for_download": False,
@@ -152,18 +166,15 @@ def extract_single_page_pdf(input_pdf_path, output_pdf_path):
         return False
 
 def extract_first_7_pages_from_pdf(pdf_path):
-    """
-    Extract text from the first 7 pages, return as a string
-    """
     text_content = []
     try:
         with open(pdf_path, "rb") as f:
             reader = PyPDF2.PdfReader(f)
-            total_pages = len(reader.pages)
-            for page_idx in range(min(7, total_pages)):
-                page_text = reader.pages[page_idx].extract_text()
-                if page_text:
-                    text_content.append(page_text)
+            for page_idx in range(min(7, len(reader.pages))):
+                # Explicitly close page streams after processing
+                page = reader.pages[page_idx]
+                text_content.append(page.extract_text())
+                page = None  # Help GC
         return "\n".join(text_content).strip()
     except Exception as e:
         print(f"[ERROR] Extracting text from {pdf_path}: {e}")
@@ -241,6 +252,12 @@ try:
 
     # Loop pages
     while True:
+        if not check_system_resources():
+            print("[PAUSE] Waiting 30s for resource recovery...")
+            time.sleep(30)
+            continue
+    
+    # Existing processing code
         rows = driver.find_elements(By.XPATH, "//tbody/tr")
         for row in rows:
             try:
