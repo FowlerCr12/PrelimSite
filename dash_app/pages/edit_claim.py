@@ -124,16 +124,14 @@ def layout(cid=None, **other_kwargs):
                         id="claim-number",
                         value=claim_data.get("claim_number", ""),
                         placeholder="Enter claim number",
-                        style={"width": "45%"},
-                        style=get_style("claim-number")
+                        style=get_style("claim-number", {"width": "45%"}),
                     ),
                     dmc.TextInput(
                         label="Policyholder",
                         id="policyholder",
                         value=claim_data.get("Policyholder", ""),
                         placeholder="Enter policyholder name",
-                        style={"width": "45%"},
-                        style=get_style("policyholder")
+                        style=get_style("policyholder", {"width": "45%"}),
                     ),
                 ],
                 justify="space-between",
@@ -147,16 +145,14 @@ def layout(cid=None, **other_kwargs):
                         id="loss-address",
                         value=claim_data.get("Loss_Address", ""),
                         placeholder="Enter loss address",
-                        style={"width": "45%"},
-                        style=get_style("loss-address")
+                        style=get_style("loss-address", {"width": "45%"}),
                     ),
                     dmc.TextInput(
                         label="Date of Loss",
                         id="date-of-loss",
                         value=claim_data.get("Date_Of_Loss", ""),
                         placeholder="YYYY-MM-DD",
-                        style={"width": "45%"},
-                        style=get_style("date-of-loss")
+                        style=get_style("date-of-loss", {"width": "45%"}),
                     ),
                 ],
                 justify="space-between"
