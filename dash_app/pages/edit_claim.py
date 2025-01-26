@@ -160,7 +160,22 @@ def layout(cid=None, **other_kwargs):
         [
             store_cid,  # hidden, just holds the cid for the callback
 
-            html.H3(f"Editing Claim: {cid}"),
+            # Create a Group to hold both the heading and the button
+            dmc.Group(
+                [
+                    html.H3(f"Editing Claim: {cid}", style={"margin": 0}),  # Remove default margin
+                    dmc.Button(
+                        "View Binder PDF",
+                        id="view-binder-button",
+                        color="blue",
+                        variant="filled",
+                        leftSection=html.I(className="fas fa-file-pdf"),
+                    ),
+                ],
+                position="apart",  # This spreads the items apart
+                align="center",    # This vertically centers the items
+            ),
+            
             dmc.Text("Please fill out the fields below (data loaded from DB)."),
 
             # ========== Basic Fields in columns ==========
@@ -495,21 +510,6 @@ def layout(cid=None, **other_kwargs):
                     "label": "Close",
                     "onClick": "function() { return false; }"
                 }
-            ),
-
-            # Add this near your other buttons
-            dmc.Group(
-                [
-                    dmc.Button(
-                        "View Binder PDF",
-                        id="view-binder-button",
-                        color="blue",
-                        variant="filled",
-                        leftSection=html.I(className="fas fa-file-pdf"),
-                    ),
-                ],
-                justify="flex-end",
-                style={"marginTop": "1rem"}
             ),
 
         ],
