@@ -104,10 +104,35 @@ def layout(cid=None, **other_kwargs):
 
     def get_style(field_id, base_style=None):
         base_style = base_style or {}
-        value = claim_data.get(field_id, "").strip()  # Get the field value
+        
+        # Map component IDs to database column names
+        field_mapping = {
+            "coverage-a": "coverage_building",
+            "coverage-b": "coverage_contents",
+            "coverage-a-deductible": "Coverage_A_Deductible",
+            "coverage-b-deductible": "Coverage_B_Deductible",
+            "coverage-a-reserve": "Coverage_A_Reserve",
+            "coverage-b-reserve": "Coverage_B_Reserve",
+            "coverage-a-advance": "Coverage_A_Advance",
+            "coverage-b-advance": "Coverage_B_Advance",
+            "policyholder": "Policyholder",
+            "claim-number": "claim_number",
+            "date-of-loss": "Date_Of_Loss",
+            "insurer": "Insurer",
+            "adjuster-name": "Adjuster_Name",
+            "policy-number": "Policy_Number",
+            "claim-type": "claim_type",
+            "contact-info-adjuster": "Adjuster_Contact_Info",
+            "contact-info-insured": "Insured_Contact_Info",
+            "loss-address": "Loss_Address"
+        }
+        
+        # Get the correct database column name
+        db_field = field_mapping.get(field_id, field_id)
+        value = claim_data.get(db_field, "").strip()  # Get the field value
         confidence = get_confidence(field_id)
         
-        print(f"DEBUG: Style for {field_id} - confidence: {confidence}")
+        print(f"DEBUG: Style for {field_id} (DB field: {db_field}) - value: {value} - confidence: {confidence}")
         
         if not value:  # Check if field is blank or only whitespace
             print(f"DEBUG: Applying yellow style to {field_id} (blank field)")
