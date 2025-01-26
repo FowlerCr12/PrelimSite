@@ -79,6 +79,7 @@ def layout(cid=None, **other_kwargs):
         "coverage-b-deductible": "Coverage-B-Contents_Deductible",
         "coverage-b-advance": "Coverage-B-Contents_Advance",
         "policyholder": "Policyholder_Name",
+        "claim-number": "Claim_Number",
         # Add more mappings as needed
     }
 
@@ -123,14 +124,16 @@ def layout(cid=None, **other_kwargs):
                         id="claim-number",
                         value=claim_data.get("claim_number", ""),
                         placeholder="Enter claim number",
-                        style={"width": "45%"}
+                        style={"width": "45%"},
+                        style=get_style("claim-number")
                     ),
                     dmc.TextInput(
                         label="Policyholder",
                         id="policyholder",
                         value=claim_data.get("Policyholder", ""),
                         placeholder="Enter policyholder name",
-                        style={"width": "45%"}
+                        style={"width": "45%"},
+                        style=get_style("policyholder")
                     ),
                 ],
                 justify="space-between",
@@ -144,14 +147,16 @@ def layout(cid=None, **other_kwargs):
                         id="loss-address",
                         value=claim_data.get("Loss_Address", ""),
                         placeholder="Enter loss address",
-                        style={"width": "45%"}
+                        style={"width": "45%"},
+                        style=get_style("loss-address")
                     ),
                     dmc.TextInput(
                         label="Date of Loss",
                         id="date-of-loss",
                         value=claim_data.get("Date_Of_Loss", ""),
                         placeholder="YYYY-MM-DD",
-                        style={"width": "45%"}
+                        style={"width": "45%"},
+                        style=get_style("date-of-loss")
                     ),
                 ],
                 justify="space-between"
