@@ -228,7 +228,7 @@ def layout(cid=None, **other_kwargs):
                         ],
                         gap="xs",
                     ),
-                    # Right side button - now with top-level target
+                    # Right side button - now with _blank target
                     html.A(
                         dmc.Button(
                             "View Binder PDF",
@@ -238,7 +238,8 @@ def layout(cid=None, **other_kwargs):
                         ),
                         id="view-binder-link",
                         href="#",
-                        target="_top",  # Changed from _blank to _top to break out of iframe
+                        target="_blank",  # Changed back to _blank to open in new window
+                        rel="noopener noreferrer",  # Added for security best practices
                         style={"textDecoration": "none"}
                     ),
                 ],
