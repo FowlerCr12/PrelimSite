@@ -937,11 +937,14 @@ def update_binder_link(cid):
             aws_secret_access_key=os.getenv('SPACES_SECRET')
         )
         
+        # Generate presigned URL with ResponseContentDisposition
         url = client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': bucket_name,
-                'Key': key
+                'Key': key,
+                'ResponseContentType': 'application/pdf',
+                'ResponseContentDisposition': 'inline'  # This tells the browser to display the PDF
             },
             ExpiresIn=3600
         )
