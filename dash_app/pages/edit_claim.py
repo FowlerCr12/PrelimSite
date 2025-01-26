@@ -137,7 +137,14 @@ def layout(cid=None, **other_kwargs):
         
         # Get the correct database column name
         db_field = field_mapping.get(field_id, field_id)
-        value = claim_data.get(db_field, "").strip()  # Get the field value
+        value = claim_data.get(db_field)  # Get the field value
+        
+        # Handle None values and strip whitespace if it's a string
+        if value is None:
+            value = ""
+        elif isinstance(value, str):
+            value = value.strip()
+        
         confidence = get_confidence(field_id)
         
         print(f"DEBUG: Style for {field_id} (DB field: {db_field}) - value: {value} - confidence: {confidence}")
