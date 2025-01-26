@@ -471,7 +471,7 @@ def layout(cid=None, **other_kwargs):
                         "View Binder PDF",
                         id="view-binder-button",
                         color="blue",
-                        leftIcon=html.I(className="fas fa-file-pdf"),
+                        leftSection=html.I(className="fas fa-file-pdf"),
                     ),
                 ],
                 justify="flex-end",
