@@ -427,7 +427,7 @@ def layout(cid=None, **other_kwargs):
             # ========== Save Button & Confirmation ==========
             dmc.Group(
                 [
-                    dmc.Button("Save Changes", id="save-button", color="blue"),
+                    dmc.Button("Save Changes", id="save-button", color="blue", variant="filled"),
                 ],
                 justify="flex-end",
                 style={"marginTop": "1rem"}
@@ -444,6 +444,7 @@ def layout(cid=None, **other_kwargs):
                 id="download-docx-button",
                 n_clicks=0,
                 color="blue",
+                variant="filled",
                 fullWidth=True,
                 mt="md",
             ),
@@ -471,6 +472,7 @@ def layout(cid=None, **other_kwargs):
                         "View Binder PDF",
                         id="view-binder-button",
                         color="blue",
+                        variant="filled",
                         leftSection=html.I(className="fas fa-file-pdf"),
                     ),
                 ],
