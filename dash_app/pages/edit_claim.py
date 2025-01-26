@@ -97,9 +97,15 @@ def layout(cid=None, **other_kwargs):
     def get_style(field_id, base_style=None):
         base_style = base_style or {}
         confidence = get_confidence(field_id)
+        print(f"DEBUG: Style for {field_id} - confidence: {confidence}")
         if confidence < 0.95:
-            base_style["backgroundColor"] = "#ffebee"  # Light red background
-            base_style["borderColor"] = "#ef5350"      # Red border
+            print(f"DEBUG: Applying red style to {field_id}")
+            base_style["backgroundColor"] = "#ffebee"  # Light red
+            base_style["borderColor"] = "#ef5350"      # Red
+        else:
+            print(f"DEBUG: Applying green style to {field_id}")
+            base_style["backgroundColor"] = "#e8f5e9"  # Light green
+            base_style["borderColor"] = "#66bb6a"      # Green
         return base_style
 
     return dmc.Stack(
