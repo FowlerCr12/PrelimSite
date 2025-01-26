@@ -222,13 +222,17 @@ def layout(cid=None, **other_kwargs):
                         ],
                         gap="xs",
                     ),
-                    # Right side button
-                    dmc.Button(
-                        "View Binder PDF",
+                    # Right side button - now wrapped in an anchor that opens in new tab
+                    html.A(
+                        dmc.Button(
+                            "View Binder PDF",
+                            color="blue",
+                            variant="filled",
+                            leftSection=html.I(className="fas fa-file-pdf"),
+                        ),
                         id="view-binder-button",
-                        color="blue",
-                        variant="filled",
-                        leftSection=html.I(className="fas fa-file-pdf"),
+                        target="_blank",  # Opens in new tab
+                        style={"textDecoration": "none"}  # Removes underline from link
                     ),
                 ],
                 justify="space-between",
