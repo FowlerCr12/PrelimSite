@@ -16,7 +16,9 @@ import boto3
 from botocore.config import Config
 import os
 from urllib.parse import urlparse
-load_dotenv()
+
+# Load environment variables from .env file
+load_dotenv('/opt/PrelimSite/.env')
 
 dash.register_page(__name__, path_template="/edit/<cid>")
 
