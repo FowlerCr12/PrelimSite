@@ -17,8 +17,8 @@ def clear_table_rows():
     )
     cursor = conn.cursor()
 
-    # Delete all rows but keep table structure
-    delete_sql = f"DELETE FROM {TABLE_NAME};"
+    # Change to DESCRIBE command
+    describe_sql = f"DESCRIBE {TABLE_NAME};"
 
     try:
         cursor.execute(delete_sql)
