@@ -87,6 +87,10 @@ def layout(cid=None, **other_kwargs):
         "claim-type": "Claim_Type",
         "contact-info-adjuster": "Adjuster_Contact_Info",
         "contact-info-insured": "Insured_Contact_Info",
+        "loss-address": "Loss_Address",
+        "claim-assigned-date": "Claim_Assigned_Date",
+        "claim-contact-date": "Claim_Contact_Date",
+        "claim-inspection-date": "Claim_Inspection_Date",
         # Add more mappings as needed
     }
 
@@ -124,7 +128,10 @@ def layout(cid=None, **other_kwargs):
             "claim-type": "claim_type",
             "contact-info-adjuster": "Adjuster_Contact_Info",
             "contact-info-insured": "Insured_Contact_Info",
-            "loss-address": "Loss_Address"
+            "loss-address": "Loss_Address",
+            "claim-assigned-date": "Claim_Assigned_Date",
+            "claim-contact-date": "Claim_Contact_Date",
+            "claim-inspection-date": "Claim_Inspection_Date"
         }
         
         # Get the correct database column name
@@ -350,21 +357,21 @@ def layout(cid=None, **other_kwargs):
                         id="claim-assigned-date",
                         value=claim_data.get("Claim_Assigned_Date", ""),
                         placeholder="YYYY-MM-DD",
-                        style={"width": "30%"}
+                        style=get_style("claim-assigned-date", {"width": "30%"})
                     ),
                     dmc.TextInput(
                         label="Claim Contact Date",
                         id="claim-contact-date",
                         value=claim_data.get("Claim_Contact_Date", ""),
                         placeholder="YYYY-MM-DD",
-                        style={"width": "30%"}
+                        style=get_style("claim-contact-date", {"width": "30%"})
                     ),
                     dmc.TextInput(
                         label="Claim Inspection Date",
                         id="claim-inspection-date",
                         value=claim_data.get("Claim_Inspection_Date", ""),
                         placeholder="YYYY-MM-DD",
-                        style={"width": "30%"}
+                        style=get_style("claim-inspection-date", {"width": "30%"})
                     ),
                 ],
                 justify="space-between",
