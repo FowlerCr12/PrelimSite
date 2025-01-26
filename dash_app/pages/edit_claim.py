@@ -172,7 +172,7 @@ def layout(cid=None, **other_kwargs):
                         leftSection=html.I(className="fas fa-file-pdf"),
                     ),
                 ],
-                position="apart",  # This spreads the items apart
+                justify="space-between",  # Changed from position="apart" to justify="space-between"
                 align="center",    # This vertically centers the items
             ),
             
