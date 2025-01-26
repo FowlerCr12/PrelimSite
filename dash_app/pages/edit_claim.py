@@ -892,57 +892,38 @@ def download_docx(n_clicks, row_id):
 @callback(
     Output("view-binder-button", "href"),
     Input("cid-store", "data"),
-    prevent_initial_call=True
+    prevent_initial_call=False  # Changed to False to ensure it runs on page load
 )
 def update_binder_link(cid):
-    print(f"[DEBUG] Generating binder link for claim {cid}")
+    print("=" * 50)
+    print(f"Callback triggered with cid: {cid}")
+    
     if not cid:
-        print("[DEBUG] No CID provided")
+        print("No CID provided")
         return "#"
     
     try:
         # Get the claim data from the database
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
         
-        cursor.execute("SELECT binder_spaces_link FROM claims WHERE claim_number = %s", (cid,))
+        print(f"Querying database for claim_number: {cid}")
+        cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))  # Changed to id
         result = cursor.fetchone()
         
+        print(f"Database result: {result}")
+        
         if not result or not result['binder_spaces_link']:
-            print(f"[DEBUG] No binder link found for claim {cid}")
+            print("No binder link found in database")
             return "#"
             
         spaces_link = result['binder_spaces_link']
-        print(f"[DEBUG] Found spaces link: {spaces_link}")
+        print(f"Found spaces link: {spaces_link}")
         
-        # Parse the Spaces URL to get bucket and key
-        parsed_url = urlparse(spaces_link)
-        bucket_name = parsed_url.netloc.split('.')[0]
-        key = parsed_url.path.lstrip('/')
-        
-        print(f"[DEBUG] Parsed bucket: {bucket_name}, key: {key}")
-        
-        # Create Spaces client
-        session = boto3.session.Session()
-        client = session.client('s3',
-            region_name='nyc3',
-            endpoint_url='https://nyc3.digitaloceanspaces.com',
-            aws_access_key_id=os.getenv('SPACES_KEY'),
-            aws_secret_access_key=os.getenv('SPACES_SECRET')
-        )
-        
-        # Generate presigned URL
-        url = client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': bucket_name, 'Key': key},
-            ExpiresIn=3600
-        )
-        
-        print(f"[DEBUG] Generated presigned URL: {url}")
-        return url
+        return spaces_link  # For now, just return the direct link to test
         
     except Exception as e:
-        print(f"[ERROR] Error generating binder link: {e}")
+        print(f"Error in callback: {str(e)}")
         return "#"
     finally:
         if 'cursor' in locals():
