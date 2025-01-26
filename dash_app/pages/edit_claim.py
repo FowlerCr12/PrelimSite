@@ -895,7 +895,7 @@ def download_docx(n_clicks, row_id):
     prevent_initial_call=False
 )
 def update_binder_link(cid):
-    print("=" * 50)
+    print("\n" + "=" * 50)
     print(f"Callback triggered with cid: {cid}")
     
     if not cid:
@@ -903,7 +903,13 @@ def update_binder_link(cid):
         return "#"
     
     try:
-        # Get the claim data from the database
+        # Test URL first - return a known working URL to verify the link works at all
+        test_url = "https://www.google.com"
+        print(f"Returning test URL: {test_url}")
+        return test_url
+        
+        # Comment out the rest of the function for now
+        '''
         conn = get_db_connection()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         
@@ -922,12 +928,11 @@ def update_binder_link(cid):
         
         # Parse the Spaces URL
         parsed_url = urlparse(spaces_link)
-        bucket_name = 'prelim-program-file-storage'  # Hardcode the bucket name
-        key = parsed_url.path.lstrip('/')  # This should be 'pdfs/244471.pdf'
+        bucket_name = 'prelim-program-file-storage'
+        key = parsed_url.path.lstrip('/')
         
         print(f"Parsed bucket: {bucket_name}, key: {key}")
         
-        # Create Spaces client
         session = boto3.session.Session()
         client = session.client('s3',
             region_name='nyc3',
@@ -936,7 +941,6 @@ def update_binder_link(cid):
             aws_secret_access_key=os.getenv('SPACES_SECRET')
         )
         
-        # Generate presigned URL
         url = client.generate_presigned_url(
             'get_object',
             Params={
@@ -948,6 +952,7 @@ def update_binder_link(cid):
         
         print(f"Generated presigned URL: {url}")
         return url
+        '''
         
     except Exception as e:
         print(f"Error in callback: {str(e)}")
