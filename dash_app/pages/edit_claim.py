@@ -234,7 +234,7 @@ def layout(cid=None, **other_kwargs):
                             variant="filled",
                             leftSection=html.I(className="fas fa-file-pdf"),
                         ),
-                        id="view-binder-button",
+                        id="view-binder-link",
                         href="#",  # Initial href that will be updated by callback
                         target="_blank",  # Opens in new tab
                         style={"textDecoration": "none"}  # Removes underline from link
@@ -890,7 +890,7 @@ def download_docx(n_clicks, row_id):
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
 
 @callback(
-    Output("view-binder-button", "href"),
+    Output("view-binder-link", "href"),
     Input("cid-store", "data"),
     prevent_initial_call=False
 )
