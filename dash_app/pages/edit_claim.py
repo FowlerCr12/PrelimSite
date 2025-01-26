@@ -10,6 +10,7 @@ from io import BytesIO
 import re
 from docx import Document
 from dotenv import load_dotenv
+import json
 load_dotenv()
 
 dash.register_page(__name__, path_template="/edit/<cid>")
@@ -58,6 +59,48 @@ def layout(cid=None, **other_kwargs):
 
     # We store cid in a dcc.Store so we can access it in the callback
     store_cid = dcc.Store(id="cid-store", data=cid)
+
+    # Parse JSON output from the correct column name
+    json_data = {}
+    try:
+        if claim_data.get('extracted_json'):  # Changed from json_output to extracted_json
+            json_data = json.loads(claim_data['extracted_json'])
+    except json.JSONDecodeError:
+        print("Error decoding JSON")
+
+    # Create a mapping between your form fields and JSON types
+    field_type_mapping = {
+        "coverage-a-reserve": "Coverage-A-Building_Reserve",
+        "coverage-a": "Coverage-A-Building",
+        "coverage-a-deductible": "Coverage-A-Building_Deductible",
+        "coverage-a-advance": "Coverage-A-Building_Advance",
+        "coverage-b": "Coverage-B-Contents",
+        "coverage-b-reserve": "Coverage-B-Contents_Reserve",
+        "coverage-b-deductible": "Coverage-B-Contents_Deductible",
+        "coverage-b-advance": "Coverage-B-Contents_Advance",
+        "policyholder": "Policyholder_Name",
+        # Add more mappings as needed
+    }
+
+    def get_confidence(field_id):
+        # Get the corresponding JSON type for this field
+        json_type = field_type_mapping.get(field_id)
+        if not json_type:
+            return .90  # Default confidence if no mapping exists
+        
+        if json_data and 'entities' in json_data:
+            for entity in json_data['entities']:
+                if entity.get('type') == json_type:
+                    return entity.get('confidence', 1.0)
+        return 1.0
+
+    def get_style(field_id, base_style=None):
+        base_style = base_style or {}
+        confidence = get_confidence(field_id)
+        if confidence < 0.95:
+            base_style["backgroundColor"] = "#ffebee"  # Light red background
+            base_style["borderColor"] = "#ef5350"      # Red border
+        return base_style
 
     return dmc.Stack(
         [
@@ -177,14 +220,14 @@ def layout(cid=None, **other_kwargs):
                         id="coverage-a",
                         value=claim_data.get("coverage_building", ""),
                         placeholder="Building Coverage",
-                        style={"width": "45%"}
+                        style=get_style("coverage-a")
                     ),
                     dmc.TextInput(
                         label="Coverage B",
                         id="coverage-b",
                         value=claim_data.get("coverage_contents", ""),
                         placeholder="Contents Coverage",
-                        style={"width": "45%"}
+                        style=get_style("coverage-b")
                     ),
                 ],
                 justify="space-between",
@@ -196,13 +239,13 @@ def layout(cid=None, **other_kwargs):
                         label="Coverage A Deductible",
                         id="coverage-a-deductible",
                         value=claim_data.get("Coverage_A_Deductible", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-a-deductible")
                     ),
                     dmc.TextInput(
                         label="Coverage B Deductible",
                         id="coverage-b-deductible",
                         value=claim_data.get("Coverage_B_Deductible", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-b-deductible")
                     ),
                 ],
                 justify="space-between"
@@ -213,13 +256,13 @@ def layout(cid=None, **other_kwargs):
                         label="Coverage A Reserve",
                         id="coverage-a-reserve",
                         value=claim_data.get("Coverage_A_Reserve", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-a-reserve")
                     ),
                     dmc.TextInput(
                         label="Coverage B Reserve",
                         id="coverage-b-reserve",
                         value=claim_data.get("Coverage_B_Reserve", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-b-reserve")
                     ),
                 ],
                 justify="space-between"
@@ -230,13 +273,13 @@ def layout(cid=None, **other_kwargs):
                         label="Coverage A Advance",
                         id="coverage-a-advance",
                         value=claim_data.get("Coverage_A_Advance", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-a-advance")
                     ),
                     dmc.TextInput(
                         label="Coverage B Advance",
                         id="coverage-b-advance",
                         value=claim_data.get("Coverage_B_Advance", ""),
-                        style={"width": "45%"}
+                        style=get_style("coverage-b-advance")
                     ),
                 ],
                 justify="space-between"
