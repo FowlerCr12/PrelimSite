@@ -892,7 +892,7 @@ def download_docx(n_clicks, row_id):
 @callback(
     Output("view-binder-button", "href"),
     Input("cid-store", "data"),
-    prevent_initial_call=False  # Changed to False to ensure it runs on page load
+    prevent_initial_call=False
 )
 def update_binder_link(cid):
     print("=" * 50)
@@ -908,7 +908,7 @@ def update_binder_link(cid):
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         
         print(f"Querying database for claim_number: {cid}")
-        cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))  # Changed to id
+        cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))
         result = cursor.fetchone()
         
         print(f"Database result: {result}")
@@ -920,10 +920,39 @@ def update_binder_link(cid):
         spaces_link = result['binder_spaces_link']
         print(f"Found spaces link: {spaces_link}")
         
-        return spaces_link  # For now, just return the direct link to test
+        # Parse the Spaces URL
+        parsed_url = urlparse(spaces_link)
+        bucket_name = 'prelim-program-file-storage'  # Hardcode the bucket name
+        key = parsed_url.path.lstrip('/')  # This should be 'pdfs/244471.pdf'
+        
+        print(f"Parsed bucket: {bucket_name}, key: {key}")
+        
+        # Create Spaces client
+        session = boto3.session.Session()
+        client = session.client('s3',
+            region_name='nyc3',
+            endpoint_url='https://nyc3.digitaloceanspaces.com',
+            aws_access_key_id=os.getenv('SPACES_KEY'),
+            aws_secret_access_key=os.getenv('SPACES_SECRET')
+        )
+        
+        # Generate presigned URL
+        url = client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': bucket_name,
+                'Key': key
+            },
+            ExpiresIn=3600
+        )
+        
+        print(f"Generated presigned URL: {url}")
+        return url
         
     except Exception as e:
         print(f"Error in callback: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return "#"
     finally:
         if 'cursor' in locals():
