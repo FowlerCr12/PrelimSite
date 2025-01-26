@@ -235,6 +235,7 @@ def layout(cid=None, **other_kwargs):
                             leftSection=html.I(className="fas fa-file-pdf"),
                         ),
                         id="view-binder-button",
+                        href="#",  # Initial href that will be updated by callback
                         target="_blank",  # Opens in new tab
                         style={"textDecoration": "none"}  # Removes underline from link
                     ),
@@ -891,47 +892,60 @@ def download_docx(n_clicks, row_id):
 @callback(
     Output("view-binder-button", "href"),
     Input("cid-store", "data"),
+    prevent_initial_call=True
 )
 def update_binder_link(cid):
+    print(f"[DEBUG] Generating binder link for claim {cid}")
     if not cid:
+        print("[DEBUG] No CID provided")
         return "#"
     
-    conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    
     try:
-        cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))
+        # Get the claim data from the database
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        cursor.execute("SELECT binder_spaces_link FROM claims WHERE claim_number = %s", (cid,))
         result = cursor.fetchone()
-        if result and result['binder_spaces_link']:
-            # Parse the Spaces URL to get bucket and key
-            parsed_url = urlparse(result['binder_spaces_link'])
-            bucket_name = parsed_url.netloc.split('.')[0]
-            key = parsed_url.path.lstrip('/')
+        
+        if not result or not result['binder_spaces_link']:
+            print(f"[DEBUG] No binder link found for claim {cid}")
+            return "#"
             
-            # Create Spaces client
-            session = boto3.session.Session()
-            client = session.client('s3',
-                region_name='nyc3',  # Digital Ocean region
-                endpoint_url='https://nyc3.digitaloceanspaces.com',  # DO Spaces endpoint
-                aws_access_key_id=os.getenv('SPACES_KEY'),
-                aws_secret_access_key=os.getenv('SPACES_SECRET')
-            )
-            
-            # Generate presigned URL that's valid for 1 hour (3600 seconds)
-            try:
-                url = client.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': bucket_name, 'Key': key},
-                    ExpiresIn=3600
-                )
-                return url
-            except Exception as e:
-                print(f"Error generating presigned URL: {e}")
-                return "#"
+        spaces_link = result['binder_spaces_link']
+        print(f"[DEBUG] Found spaces link: {spaces_link}")
+        
+        # Parse the Spaces URL to get bucket and key
+        parsed_url = urlparse(spaces_link)
+        bucket_name = parsed_url.netloc.split('.')[0]
+        key = parsed_url.path.lstrip('/')
+        
+        print(f"[DEBUG] Parsed bucket: {bucket_name}, key: {key}")
+        
+        # Create Spaces client
+        session = boto3.session.Session()
+        client = session.client('s3',
+            region_name='nyc3',
+            endpoint_url='https://nyc3.digitaloceanspaces.com',
+            aws_access_key_id=os.getenv('SPACES_KEY'),
+            aws_secret_access_key=os.getenv('SPACES_SECRET')
+        )
+        
+        # Generate presigned URL
+        url = client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': key},
+            ExpiresIn=3600
+        )
+        
+        print(f"[DEBUG] Generated presigned URL: {url}")
+        return url
+        
     except Exception as e:
-        print(f"Error fetching binder link: {e}")
+        print(f"[ERROR] Error generating binder link: {e}")
+        return "#"
     finally:
-        cursor.close()
-        conn.close()
-    
-    return "#"
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
