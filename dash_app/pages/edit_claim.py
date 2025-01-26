@@ -12,6 +12,10 @@ from docx import Document
 from dotenv import load_dotenv
 import json
 from dash_iconify import DashIconify
+import boto3
+from botocore.config import Config
+import os
+from urllib.parse import urlparse
 load_dotenv()
 
 dash.register_page(__name__, path_template="/edit/<cid>")
@@ -899,7 +903,31 @@ def update_binder_link(cid):
         cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))
         result = cursor.fetchone()
         if result and result['binder_spaces_link']:
-            return result['binder_spaces_link']
+            # Parse the Spaces URL to get bucket and key
+            parsed_url = urlparse(result['binder_spaces_link'])
+            bucket_name = parsed_url.netloc.split('.')[0]
+            key = parsed_url.path.lstrip('/')
+            
+            # Create Spaces client
+            session = boto3.session.Session()
+            client = session.client('s3',
+                region_name='nyc3',  # Digital Ocean region
+                endpoint_url='https://nyc3.digitaloceanspaces.com',  # DO Spaces endpoint
+                aws_access_key_id=os.getenv('SPACES_KEY'),
+                aws_secret_access_key=os.getenv('SPACES_SECRET')
+            )
+            
+            # Generate presigned URL that's valid for 1 hour (3600 seconds)
+            try:
+                url = client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': bucket_name, 'Key': key},
+                    ExpiresIn=3600
+                )
+                return url
+            except Exception as e:
+                print(f"Error generating presigned URL: {e}")
+                return "#"
     except Exception as e:
         print(f"Error fetching binder link: {e}")
     finally:

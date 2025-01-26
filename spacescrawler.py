@@ -17,8 +17,8 @@ from selenium.webdriver.support.ui import Select
 # CONFIGURATION
 ###########################################
 # DigitalOcean Spaces
-SPACES_ACCESS_KEY_ID = "DO801AJJWKUNKBVUBD2Q"
-SPACES_SECRET_ACCESS_KEY = "VGU+W7A3zj/mVgi4AkgoO9elOIUdToeIu7hV5jBHAAc"
+SPACES_KEY = os.getenv('SPACES_KEY'),
+SPACES_SECRET = os.getenv('SPACES_SECRET')
 SPACES_ENDPOINT = "nyc3.digitaloceanspaces.com"
 SPACES_BUCKET = "prelim-program-file-storage"
 SPACES_REGION = "nyc3"
