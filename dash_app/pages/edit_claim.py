@@ -453,16 +453,16 @@ def layout(cid=None, **other_kwargs):
 
             # ======= Notification Container =======
             dmc.Notification(
-    id="download-notification",
-    title="Download Complete",
-    message="Your file has been successfully downloaded.",
-    color="green",
-    autoClose=5000,
-    action={
-        "label": "Close",
-        "onClick": "function() { return false; }"
-    },
-)
+                id="download-notification",
+                title="Download Complete",
+                message="Your file has been successfully downloaded.",
+                color="green",
+                autoClose=5000,
+                action={
+                    "label": "Close",
+                    "onClick": "function() { return false; }"
+                }
+            ),
 
             # Add this near your other buttons
             dmc.Group(
@@ -471,9 +471,7 @@ def layout(cid=None, **other_kwargs):
                         "View Binder PDF",
                         id="view-binder-button",
                         color="blue",
-                        leftIcon=html.I(className="fas fa-file-pdf"),  # Optional: adds PDF icon
-                        href=claim_data.get('binder_spaces_link', '#'),
-                        target="_blank"  # Opens in new tab
+                        leftIcon=html.I(className="fas fa-file-pdf"),
                     ),
                 ],
                 justify="flex-end",
@@ -482,7 +480,7 @@ def layout(cid=None, **other_kwargs):
 
         ],
         # Removed gap or spacing usage entirely
-        style={"padding": "20px"},
+        style={"padding": "20px"}
     )
 
 @callback(
@@ -788,3 +786,27 @@ def download_docx(n_clicks, row_id):
 
     # 6) Return a dcc.Download object + success message
     return dcc.send_bytes(buffer.getvalue(), filename), "Report downloaded successfully.", "green"
+
+@callback(
+    Output("view-binder-button", "href"),
+    Input("cid-store", "data"),
+)
+def update_binder_link(cid):
+    if not cid:
+        return "#"
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    try:
+        cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))
+        result = cursor.fetchone()
+        if result and result['binder_spaces_link']:
+            return result['binder_spaces_link']
+    except Exception as e:
+        print(f"Error fetching binder link: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+    
+    return "#"
