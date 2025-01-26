@@ -226,7 +226,7 @@ def layout(cid=None, **other_kwargs):
                         ],
                         gap="xs",
                     ),
-                    # Right side button - now wrapped in an anchor that opens in new tab
+                    # Right side button - now with top-level target
                     html.A(
                         dmc.Button(
                             "View Binder PDF",
@@ -235,9 +235,9 @@ def layout(cid=None, **other_kwargs):
                             leftSection=html.I(className="fas fa-file-pdf"),
                         ),
                         id="view-binder-link",
-                        href="#",  # Initial href that will be updated by callback
-                        target="_blank",  # Opens in new tab
-                        style={"textDecoration": "none"}  # Removes underline from link
+                        href="#",
+                        target="_top",  # Changed from _blank to _top to break out of iframe
+                        style={"textDecoration": "none"}
                     ),
                 ],
                 justify="space-between",
@@ -903,13 +903,6 @@ def update_binder_link(cid):
         return "#"
     
     try:
-        # Test URL first - return a known working URL to verify the link works at all
-        test_url = "https://www.google.com"
-        print(f"Returning test URL: {test_url}")
-        return test_url
-        
-        # Comment out the rest of the function for now
-        '''
         conn = get_db_connection()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         
@@ -952,7 +945,6 @@ def update_binder_link(cid):
         
         print(f"Generated presigned URL: {url}")
         return url
-        '''
         
     except Exception as e:
         print(f"Error in callback: {str(e)}")
