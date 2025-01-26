@@ -181,7 +181,7 @@ def layout(cid=None, **other_kwargs):
                                     size="sm",
                                     children=[
                                         dmc.ListItem(
-                                            "Green: Verified data (confidence > 96%)",
+                                            "Green: Verified data (confidence > 96%). Information is most likely correct.",
                                             icon=dmc.ThemeIcon(
                                                 DashIconify(icon="radix-icons:check", width=16),
                                                 radius="xl",
@@ -190,7 +190,7 @@ def layout(cid=None, **other_kwargs):
                                             ),
                                         ),
                                         dmc.ListItem(
-                                            "Yellow: Empty field needs attention",
+                                            "Yellow: Empty field needs attention. May or may not need to be filled out.",
                                             icon=dmc.ThemeIcon(
                                                 DashIconify(icon="radix-icons:question-mark", width=16),
                                                 radius="xl",
@@ -199,7 +199,7 @@ def layout(cid=None, **other_kwargs):
                                             ),
                                         ),
                                         dmc.ListItem(
-                                            "Red: Low confidence data (< 96%)",
+                                            "Red: Low confidence data. Program not confident in this information. (< 96%)",
                                             icon=dmc.ThemeIcon(
                                                 DashIconify(icon="radix-icons:exclamation-triangle", width=16),
                                                 radius="xl",
