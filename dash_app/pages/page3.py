@@ -6,12 +6,13 @@ import plotly.graph_objects as go
 from db import get_db_connection
 import pandas as pd
 from datetime import datetime, timedelta
+import pymysql
 
 dash.register_page(__name__, path="/stats")
 
 def get_claims_data():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
     
     # Fetch all relevant data
     cursor.execute("""
