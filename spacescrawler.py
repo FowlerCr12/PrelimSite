@@ -17,7 +17,7 @@ from selenium.webdriver.support.ui import Select
 # CONFIGURATION
 ###########################################
 # DigitalOcean Spaces
-SPACES_KEY = os.getenv('SPACES_KEY'),
+SPACES_KEY = os.getenv('SPACES_KEY')     # <-- removed the trailing comma
 SPACES_SECRET = os.getenv('SPACES_SECRET')
 SPACES_ENDPOINT = "nyc3.digitaloceanspaces.com"
 SPACES_BUCKET = "prelim-program-file-storage"
@@ -57,8 +57,8 @@ def get_s3_client():
         "s3",
         region_name=SPACES_REGION,
         endpoint_url=f"https://{SPACES_ENDPOINT}",
-        aws_access_key_id=SPACES_ACCESS_KEY_ID,
-        aws_secret_access_key=SPACES_SECRET_ACCESS_KEY,
+        aws_access_key_id=SPACES_KEY,
+        aws_secret_access_key=SPACES_SECRET,
     )
 
 def upload_file_to_spaces(local_file_path, bucket_name, object_key=None, ExtraArgs={"ACL": "public-read"}):
@@ -188,7 +188,6 @@ def extract_first_7_pages_from_pdf(pdf_path):
         with open(pdf_path, "rb") as f:
             reader = PyPDF2.PdfReader(f)
             for page_idx in range(min(7, len(reader.pages))):
-                # Explicitly close page streams after processing
                 page = reader.pages[page_idx]
                 text_content.append(page.extract_text())
                 page = None  # Help GC
@@ -314,216 +313,228 @@ try:
         EC.presence_of_element_located((By.XPATH, "//tbody"))
     )
 
-    rows = driver.find_elements(By.XPATH, "//tbody/tr")
-    total_rows = len(rows)
-    print(f"[DEBUG] Found {total_rows} claims to process")
+    # Loop pages until no next button
+    while True:
+        if not check_system_resources():
+            print("[PAUSE] Waiting 30s for resource recovery...")
+            time.sleep(30)
+            continue
     
-    for row_index, row in enumerate(rows, 1):
-        try:
-            claim_link = row.find_element(By.XPATH, ".//td/a[contains(@href, 'pg=notes')]")
-            claim_href = claim_link.get_attribute("href")
-            cid = claim_href.split("cid=")[1]
+        rows = driver.find_elements(By.XPATH, "//tbody/tr")
+        print(f"[DEBUG] Found {len(rows)} claims to process on this page")
 
-            print(f"\n[DEBUG] Processing claim {row_index} of {total_rows} (CID: {cid})")
-
-            notes_file_path = os.path.join(NOTES_FOLDER, f"{cid}.txt")
-            has_final_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")
-
-            if os.path.exists(notes_file_path) or os.path.exists(has_final_path):
-                print(f"[DEBUG] Claim {cid} already processed, skipping.")
-                continue
-
-            notes_spaces_link = None
-            binder_spaces_link = None
-
-            original_tab = driver.current_window_handle
-            # open new tab
-            driver.execute_script("window.open(arguments[0], '_blank');", claim_href)
-            time.sleep(1)
-
-            all_tabs = driver.window_handles
-            if len(all_tabs) < 2:
-                print(f"[ERROR] Could not open new tab for Claim {cid}, skipping.")
-                continue
-
-            new_tab = [t for t in all_tabs if t != original_tab]
-            if not new_tab:
-                print(f"[ERROR] new_tab is empty for {cid}, skipping.")
-                continue
-
-            driver.switch_to.window(new_tab[0])
-
-            # --- NOTES ---
+        # Process all rows on this page
+        for row in rows:
             try:
-                driver.get(f"https://www.cnc-claimsource.com/claim.php?pg=notes&cid={cid}")
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.ID, "notebook"))
-                )
-                notes_elems = driver.find_elements(By.CLASS_NAME, "claim_note")
-                notes_content = [n.text.strip() for n in notes_elems]
+                claim_link = row.find_element(By.XPATH, ".//td/a[contains(@href, 'pg=notes')]")
+                claim_href = claim_link.get_attribute("href")
+                cid = claim_href.split("cid=")[1]
 
-                with open(notes_file_path, "w", encoding="utf-8") as f:
-                    for n in notes_content:
-                        f.write(n + "\n\n")
-                print(f"[DEBUG] Saved notes to {notes_file_path}")
+                notes_file_path = os.path.join(NOTES_FOLDER, f"{cid}.txt")
+                has_final_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")
 
-                # Upload notes
-                notes_key = f"notes/{cid}.txt"
-                uploaded_key = upload_file_to_spaces(notes_file_path, SPACES_BUCKET, notes_key)
-                if uploaded_key:
-                    notes_spaces_link = get_spaces_public_url(uploaded_key)
+                # Skip if we've processed this claim before
+                if os.path.exists(notes_file_path) or os.path.exists(has_final_path):
+                    print(f"[DEBUG] Claim {cid} already processed, skipping.")
+                    continue
 
-            except (TimeoutException, NoSuchElementException) as e:
-                print(f"[ERROR] Could not load notes for Claim {cid}, skipping claim. Error: {e}")
-                driver.close()
-                driver.switch_to.window(original_tab)
-                continue
+                print(f"\n[DEBUG] Processing Claim {cid}")
+                notes_spaces_link = None
+                binder_spaces_link = None
 
-            # --- FILES PAGE ---
-            try:
-                print(f"[DEBUG] Loading files page for claim {cid}")
-                driver.get(f"https://www.cnc-claimsource.com/claim.php?pg=files&cid={cid}")
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, "//table[contains(@class, 'claimcenter')]"))
-                )
-                print(f"[DEBUG] Files page loaded successfully")
+                original_tab = driver.current_window_handle
+                # open new tab
+                driver.execute_script("window.open(arguments[0], '_blank');", claim_href)
+                time.sleep(1)
 
-                # NFIP Preliminary Binder - EXTRACT ONLY FIRST PAGE
+                all_tabs = driver.window_handles
+                if len(all_tabs) < 2:
+                    print(f"[ERROR] Could not open new tab for Claim {cid}, skipping.")
+                    continue
+
+                new_tab = [t for t in all_tabs if t != original_tab]
+                if not new_tab:
+                    print(f"[ERROR] new_tab is empty for {cid}, skipping.")
+                    continue
+
+                driver.switch_to.window(new_tab[0])
+
+                # --- NOTES ---
                 try:
-                    print("[DEBUG] Looking for Preliminary Binder link...")
-                    prelim_link_el = WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, "NFIP Preliminary Binder"))
+                    driver.get(f"https://www.cnc-claimsource.com/claim.php?pg=notes&cid={cid}")
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.ID, "notebook"))
                     )
-                    prelim_url = prelim_link_el.get_attribute("href")
-                    print(f"[DEBUG] Found Preliminary Binder link: {prelim_url}")
+                    notes_elems = driver.find_elements(By.CLASS_NAME, "claim_note")
+                    notes_content = [n.text.strip() for n in notes_elems]
 
-                    # Try to get all PDF links for debugging
-                    all_links = driver.find_elements(By.XPATH, "//a[contains(@href, '.pdf')]")
-                    print(f"[DEBUG] All PDF links found: {[link.get_attribute('href') for link in all_links]}")
+                    with open(notes_file_path, "w", encoding="utf-8") as f:
+                        for n in notes_content:
+                            f.write(n + "\n\n")
+                    print(f"[DEBUG] Saved notes to {notes_file_path}")
 
-                    prelim_pdf_path = download_pdf_via_requests(prelim_url, cid)
-                    if prelim_pdf_path:
-                        print(f"[DEBUG] Successfully downloaded Preliminary Binder to {prelim_pdf_path}")
-                        # 1) Extract single page
-                        single_page_path = os.path.join(PDF_FOLDER, f"{cid}_firstpage.pdf")
-                        success = extract_single_page_pdf(prelim_pdf_path, single_page_path)
-                        # 2) Remove the original multi-page PDF
-                        try:
-                            os.remove(prelim_pdf_path)
-                            print(f"[DEBUG] Removed original multi-page PDF for {cid}")
-                        except Exception as del_e:
-                            print(f"[ERROR] Removing multi-page PDF for {cid}: {del_e}")
+                    # Upload notes
+                    notes_key = f"notes/{cid}.txt"
+                    uploaded_key = upload_file_to_spaces(notes_file_path, SPACES_BUCKET, notes_key)
+                    if uploaded_key:
+                        notes_spaces_link = get_spaces_public_url(uploaded_key)
 
-                        if success:
-                            # 3) Rename single-page PDF to {cid}.pdf
-                            final_prelim_path = os.path.join(PDF_FOLDER, f"{cid}.pdf")
+                except (TimeoutException, NoSuchElementException) as e:
+                    print(f"[ERROR] Could not load notes for Claim {cid}, skipping claim. Error: {e}")
+                    driver.close()
+                    driver.switch_to.window(original_tab)
+                    continue
+
+                # --- FILES PAGE ---
+                try:
+                    print(f"[DEBUG] Loading files page for claim {cid}")
+                    driver.get(f"https://www.cnc-claimsource.com/claim.php?pg=files&cid={cid}")
+                    WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, "//table[contains(@class, 'claimcenter')]"))
+                    )
+                    print(f"[DEBUG] Files page loaded successfully")
+
+                    # NFIP Preliminary Binder - EXTRACT ONLY FIRST PAGE
+                    try:
+                        print("[DEBUG] Looking for Preliminary Binder link...")
+                        prelim_link_el = WebDriverWait(driver, 5).until(
+                            EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, "NFIP Preliminary Binder"))
+                        )
+                        prelim_url = prelim_link_el.get_attribute("href")
+                        print(f"[DEBUG] Found Preliminary Binder link: {prelim_url}")
+
+                        # Try to get all PDF links for debugging
+                        all_links = driver.find_elements(By.XPATH, "//a[contains(@href, '.pdf')]")
+                        print(f"[DEBUG] All PDF links found: {[link.get_attribute('href') for link in all_links]}")
+
+                        prelim_pdf_path = download_pdf_via_requests(prelim_url, cid)
+                        if prelim_pdf_path:
+                            print(f"[DEBUG] Successfully downloaded Preliminary Binder to {prelim_pdf_path}")
+                            # 1) Extract single page
+                            single_page_path = os.path.join(PDF_FOLDER, f"{cid}_firstpage.pdf")
+                            success = extract_single_page_pdf(prelim_pdf_path, single_page_path)
+                            # 2) Remove the original multi-page PDF
                             try:
-                                os.rename(single_page_path, final_prelim_path)
-                                print(f"[DEBUG] Single-page PDF renamed to {final_prelim_path} for {cid}")
-                            except Exception as rename_e:
-                                print(f"[ERROR] Renaming single-page PDF for {cid}: {rename_e}")
-                                final_prelim_path = single_page_path
+                                os.remove(prelim_pdf_path)
+                                print(f"[DEBUG] Removed original multi-page PDF for {cid}")
+                            except Exception as del_e:
+                                print(f"[ERROR] Removing multi-page PDF for {cid}: {del_e}")
 
-                            # 4) Upload single-page PDF to Spaces
-                            binder_key = f"pdfs/{cid}.pdf"
-                            uploaded_pdf_key = upload_file_to_spaces(final_prelim_path, SPACES_BUCKET, binder_key)
-                            if uploaded_pdf_key:
-                                binder_spaces_link = get_spaces_public_url(uploaded_pdf_key)
-                        else:
-                            print(f"[ERROR] Could not extract single page from Prelim Binder for {cid}")
-                except TimeoutException:
-                    print(f"[DEBUG] No 'NFIP Preliminary Binder' found for {cid}")
+                            if success:
+                                # 3) Rename single-page PDF to {cid}.pdf
+                                final_prelim_path = os.path.join(PDF_FOLDER, f"{cid}.pdf")
+                                try:
+                                    os.rename(single_page_path, final_prelim_path)
+                                    print(f"[DEBUG] Single-page PDF renamed to {final_prelim_path} for {cid}")
+                                except Exception as rename_e:
+                                    print(f"[ERROR] Renaming single-page PDF for {cid}: {rename_e}")
+                                    final_prelim_path = single_page_path
 
-                # Final Report
-                try:
-                    final_link_el = WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, "Final Report"))
-                    )
-                    final_url = final_link_el.get_attribute("href")
-                    print(f"[DEBUG] Found Final Report link: {final_url}")
-
-                    final_pdf_path = download_pdf_via_requests(final_url, cid)
-                    if final_pdf_path:
-                        # Extract text for notes
-                        fr_text = extract_first_7_pages_from_pdf(final_pdf_path)
-                        with open(notes_file_path, "a", encoding="utf-8") as file:
-                            file.write("\n\n===== Final Report Text (First 7 Pages) =====\n")
-                            file.write(fr_text + "\n")
-
-                        # If we have a prelim binder PDF, append Proof of Loss page
-                        if binder_spaces_link:
-                            prelim_path = os.path.join(PDF_FOLDER, f"{cid}.pdf")
-                            merged_path = os.path.join(PDF_FOLDER, f"{cid}_with_pol.pdf")
-                            
-                            if extract_proof_of_loss_page(final_pdf_path, prelim_path, merged_path):
-                                # Upload the new merged PDF
-                                binder_key = f"pdfs/{cid}_with_pol.pdf"
-                                uploaded_pdf_key = upload_file_to_spaces(merged_path, SPACES_BUCKET, binder_key)
+                                # 4) Upload single-page PDF to Spaces
+                                binder_key = f"pdfs/{cid}.pdf"
+                                uploaded_pdf_key = upload_file_to_spaces(final_prelim_path, SPACES_BUCKET, binder_key)
                                 if uploaded_pdf_key:
                                     binder_spaces_link = get_spaces_public_url(uploaded_pdf_key)
+                            else:
+                                print(f"[ERROR] Could not extract single page from Prelim Binder for {cid}")
+                        else:
+                            print(f"[ERROR] Preliminary Binder download failed for {cid}")
+                    except TimeoutException:
+                        print(f"[DEBUG] No 'NFIP Preliminary Binder' found for {cid}")
+
+                    # Final Report
+                    try:
+                        final_link_el = WebDriverWait(driver, 5).until(
+                            EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, "Final Report"))
+                        )
+                        final_url = final_link_el.get_attribute("href")
+                        print(f"[DEBUG] Found Final Report link: {final_url}")
+
+                        final_pdf_path = download_pdf_via_requests(final_url, cid)
+                        if final_pdf_path:
+                            # Extract text for notes
+                            fr_text = extract_first_7_pages_from_pdf(final_pdf_path)
+                            with open(notes_file_path, "a", encoding="utf-8") as file:
+                                file.write("\n\n===== Final Report Text (First 7 Pages) =====\n")
+                                file.write(fr_text + "\n")
+
+                            # If we have a prelim binder PDF, append Proof of Loss page
+                            if binder_spaces_link:
+                                prelim_path = os.path.join(PDF_FOLDER, f"{cid}.pdf")
+                                merged_path = os.path.join(PDF_FOLDER, f"{cid}_with_pol.pdf")
                                 
-                                # Clean up the merged PDF
-                                try:
-                                    os.remove(merged_path)
-                                except Exception as del_e:
-                                    print(f"[ERROR] Removing merged PDF: {del_e}")
+                                if extract_proof_of_loss_page(final_pdf_path, prelim_path, merged_path):
+                                    # Upload the new merged PDF
+                                    binder_key = f"pdfs/{cid}_with_pol.pdf"
+                                    uploaded_pdf_key = upload_file_to_spaces(merged_path, SPACES_BUCKET, binder_key)
+                                    if uploaded_pdf_key:
+                                        binder_spaces_link = get_spaces_public_url(uploaded_pdf_key)
+                                    
+                                    # Clean up the merged PDF
+                                    try:
+                                        os.remove(merged_path)
+                                    except Exception as del_e:
+                                        print(f"[ERROR] Removing merged PDF: {del_e}")
 
-                        # rename notes if final found
-                        final_notes_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")
-                        try:
-                            os.rename(notes_file_path, final_notes_path)
-                            notes_file_path = final_notes_path
-                            print(f"[DEBUG] Renamed notes file to {notes_file_path}")
-                        except Exception as rename_e:
-                            print(f"[ERROR] Renaming notes file for {cid}: {rename_e}")
+                            # rename notes if final found
+                            final_notes_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")
+                            try:
+                                os.rename(notes_file_path, final_notes_path)
+                                notes_file_path = final_notes_path
+                                print(f"[DEBUG] Renamed notes file to {notes_file_path}")
+                            except Exception as rename_e:
+                                print(f"[ERROR] Renaming notes file for {cid}: {rename_e}")
 
-                        # re-upload notes
-                        final_notes_key = f"notes/{cid}hasFinalReport.txt"
-                        uploaded_notes_key = upload_file_to_spaces(notes_file_path, SPACES_BUCKET, final_notes_key)
-                        if uploaded_notes_key:
-                            notes_spaces_link = get_spaces_public_url(uploaded_notes_key)
+                            # re-upload notes
+                            final_notes_key = f"notes/{cid}hasFinalReport.txt"
+                            uploaded_notes_key = upload_file_to_spaces(notes_file_path, SPACES_BUCKET, final_notes_key)
+                            if uploaded_notes_key:
+                                notes_spaces_link = get_spaces_public_url(uploaded_notes_key)
 
-                        # remove final PDF
-                        try:
-                            os.remove(final_pdf_path)
-                            print(f"[DEBUG] Deleted final PDF for Claim {cid}")
-                        except Exception as del_e:
-                            print(f"[ERROR] Deleting final PDF: {del_e}")
-                    else:
-                        print(f"[ERROR] Final Report download failed for Claim {cid}")
-                except TimeoutException:
-                    print(f"[DEBUG] No 'Final Report' found for {cid}")
+                            # remove final PDF
+                            try:
+                                os.remove(final_pdf_path)
+                                print(f"[DEBUG] Deleted final PDF for Claim {cid}")
+                            except Exception as del_e:
+                                print(f"[ERROR] Deleting final PDF: {del_e}")
+                        else:
+                            print(f"[ERROR] Final Report download failed for Claim {cid}")
+                    except TimeoutException:
+                        print(f"[DEBUG] No 'Final Report' found for {cid}")
 
-            except (TimeoutException, NoSuchElementException) as e:
-                print(f"[ERROR] Could not load files for {cid}, skipping. Error: {e}")
+                except (TimeoutException, NoSuchElementException) as e:
+                    print(f"[ERROR] Could not load files for {cid}, skipping. Error: {e}")
+                    driver.close()
+                    driver.switch_to.window(original_tab)
+                    continue
+
+                # Close new tab
                 driver.close()
                 driver.switch_to.window(original_tab)
+
+                # Insert into DB only if we have notes & binder
+                if notes_spaces_link and binder_spaces_link:
+                    store_in_db(cid, notes_spaces_link, binder_spaces_link)
+                else:
+                    print(f"[DEBUG] Missing either notes or binder for {cid}, skipping DB insert.")
+
+            except Exception as row_e:
+                #print(f"[ERROR] Unexpected row-level error for claim: {row_e}")
                 continue
 
-            # Close new tab
-            driver.close()
-            driver.switch_to.window(original_tab)
-
-            # Insert into DB only if we have notes & binder
-            if notes_spaces_link and binder_spaces_link:
-                store_in_db(cid, notes_spaces_link, binder_spaces_link)
-            else:
-                print(f"[DEBUG] Missing either notes or binder for {cid}, skipping DB insert.")
-
-            print(f"[DEBUG] Completed processing claim {row_index} of {total_rows} (CID: {cid})")
-
-        except Exception as row_e:
-            print(f"[ERROR] Error processing row {row_index}: {str(row_e)}")
-            import traceback
-            print(f"[ERROR] Full traceback: {traceback.format_exc()}")
-            continue
-
-    print("[DEBUG] Finished processing all claims")
+        # Finished processing rows on current page; attempt next page
+        print("[DEBUG] Finished processing all rows on this page.")
+        try:
+            # Adjust this if your pagination link text is different
+            next_button = driver.find_element(By.LINK_TEXT, "Next »")
+            next_button.click()
+            time.sleep(3)  # wait for the page to load
+        except NoSuchElementException:
+            print("[DEBUG] No more pages found. Exiting loop.")
+            break
 
 except Exception as e:
     print(f"[FATAL] Top-level error: {e}")
-    import traceback
-    print(f"[FATAL] Full traceback: {traceback.format_exc()}")
 
 finally:
     driver.quit()
