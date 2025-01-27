@@ -143,7 +143,11 @@ def layout(cid=None, **other_kwargs):
             "loss-address": "Loss_Address",
             "claim-assigned-date": "Claim_Assigned_Date",
             "claim-contact-date": "Claim_Contact_Date",
-            "claim-inspection-date": "Claim_Inspection_Date"
+            "claim-inspection-date": "Claim_Inspection_Date",
+            "dwelling-unit-rcv-loss": "DwellingUnit_Insured_Damage_RCV_Loss",
+            "detached-garage-rcv-loss": "DetachedGarage_Insured_Damage_RCV_Loss",
+            "improvements-rcv-loss": "Improvements_Insured_Damage_RCV_Loss",
+            "contents-rcv-loss": "Contents_Insured_Damage_RCV_Loss",
         }
         
         # Common styles for all states
