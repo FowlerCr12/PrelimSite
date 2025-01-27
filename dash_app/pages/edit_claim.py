@@ -352,6 +352,7 @@ def layout(cid=None, **other_kwargs):
             ),
 
             # ========== Coverage Fields in columns ==========
+            # Coverage A and its RCV Loss values
             dmc.Group(
                 [
                     dmc.TextInput(
@@ -361,16 +362,40 @@ def layout(cid=None, **other_kwargs):
                         placeholder="Building Coverage",
                         style=get_style("coverage-a")
                     ),
-                    dmc.TextInput(
-                        label="Coverage B",
-                        id="coverage-b",
-                        value=claim_data.get("coverage_contents", ""),
-                        placeholder="Contents Coverage",
-                        style=get_style("coverage-b")
-                    ),
                 ],
                 justify="space-between",
                 style={"marginTop": "1rem"}
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Dwelling Unit RCV Loss",
+                        id="dwelling-unit-rcv-loss",
+                        value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("dwelling-unit-rcv-loss")
+                    ),
+                    dmc.TextInput(
+                        label="Detached Garage RCV Loss",
+                        id="detached-garage-rcv-loss",
+                        value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("detached-garage-rcv-loss")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Improvements RCV Loss",
+                        id="improvements-rcv-loss",
+                        value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("improvements-rcv-loss")
+                    ),
+                ],
+                justify="space-between"
             ),
             dmc.Group(
                 [
@@ -379,12 +404,6 @@ def layout(cid=None, **other_kwargs):
                         id="coverage-a-deductible",
                         value=claim_data.get("Coverage_A_Deductible", ""),
                         style=get_style("coverage-a-deductible")
-                    ),
-                    dmc.TextInput(
-                        label="Coverage B Deductible",
-                        id="coverage-b-deductible",
-                        value=claim_data.get("Coverage_B_Deductible", ""),
-                        style=get_style("coverage-b-deductible")
                     ),
                 ],
                 justify="space-between"
@@ -397,12 +416,6 @@ def layout(cid=None, **other_kwargs):
                         value=claim_data.get("Coverage_A_Reserve", ""),
                         style=get_style("coverage-a-reserve")
                     ),
-                    dmc.TextInput(
-                        label="Coverage B Reserve",
-                        id="coverage-b-reserve",
-                        value=claim_data.get("Coverage_B_Reserve", ""),
-                        style=get_style("coverage-b-reserve")
-                    ),
                 ],
                 justify="space-between"
             ),
@@ -414,6 +427,59 @@ def layout(cid=None, **other_kwargs):
                         value=claim_data.get("Coverage_A_Advance", ""),
                         style=get_style("coverage-a-advance")
                     ),
+                ],
+                justify="space-between"
+            ),
+
+            # Coverage B and its RCV Loss value
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Coverage B",
+                        id="coverage-b",
+                        value=claim_data.get("coverage_contents", ""),
+                        placeholder="Contents Coverage",
+                        style=get_style("coverage-b")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Contents RCV Loss",
+                        id="contents-rcv-loss",
+                        value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("contents-rcv-loss")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Coverage B Deductible",
+                        id="coverage-b-deductible",
+                        value=claim_data.get("Coverage_B_Deductible", ""),
+                        style=get_style("coverage-b-deductible")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Coverage B Reserve",
+                        id="coverage-b-reserve",
+                        value=claim_data.get("Coverage_B_Reserve", ""),
+                        style=get_style("coverage-b-reserve")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
                     dmc.TextInput(
                         label="Coverage B Advance",
                         id="coverage-b-advance",
@@ -581,46 +647,6 @@ def layout(cid=None, **other_kwargs):
                     "label": "Close",
                     "onClick": "function() { return false; }"
                 }
-            ),
-
-            # Add new RCV Loss fields
-            dmc.Group(
-                [
-                    dmc.TextInput(
-                        label="Dwelling Unit RCV Loss",
-                        id="dwelling-unit-rcv-loss",
-                        value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
-                        placeholder="Enter RCV Loss amount",
-                        style=get_style("dwelling-unit-rcv-loss")
-                    ),
-                    dmc.TextInput(
-                        label="Detached Garage RCV Loss",
-                        id="detached-garage-rcv-loss",
-                        value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
-                        placeholder="Enter RCV Loss amount",
-                        style=get_style("detached-garage-rcv-loss")
-                    ),
-                ],
-                justify="space-between"
-            ),
-            dmc.Group(
-                [
-                    dmc.TextInput(
-                        label="Improvements RCV Loss",
-                        id="improvements-rcv-loss",
-                        value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
-                        placeholder="Enter RCV Loss amount",
-                        style=get_style("improvements-rcv-loss")
-                    ),
-                    dmc.TextInput(
-                        label="Contents RCV Loss",
-                        id="contents-rcv-loss",
-                        value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
-                        placeholder="Enter RCV Loss amount",
-                        style=get_style("contents-rcv-loss")
-                    ),
-                ],
-                justify="space-between"
             ),
 
         ],
