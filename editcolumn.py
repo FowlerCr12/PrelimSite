@@ -7,7 +7,7 @@ DATABASE = "defaultdb"
 TABLE_NAME = "claims"  # <-- change to your table name
 PORT = 25060            # If needed, set your custom port here
 
-def clear_table_rows():
+def add_new_columns():
     conn = mysql.connector.connect(
         host=HOST,
         port=PORT,
@@ -17,13 +17,25 @@ def clear_table_rows():
     )
     cursor = conn.cursor()
 
-    # Change to DESCRIBE command
-    describe_sql = f"DESCRIBE {TABLE_NAME};"
+    # Add new columns for RCV Loss values
+    alter_statements = [
+        "ALTER TABLE claims ADD COLUMN DetachedGarage_Insured_Damage_RCV_Loss DECIMAL(10,2)",
+        "ALTER TABLE claims ADD COLUMN DwellingUnit_Insured_Damage_RCV_Loss DECIMAL(10,2)",
+        "ALTER TABLE claims ADD COLUMN Improvements_Insured_Damage_RCV_Loss DECIMAL(10,2)",
+        "ALTER TABLE claims ADD COLUMN Contents_Insured_Damage_RCV_Loss DECIMAL(10,2)"
+    ]
 
     try:
-        cursor.execute(delete_sql)
-        conn.commit()
-        print(f"All rows deleted from {TABLE_NAME} table.")
+        for statement in alter_statements:
+            try:
+                cursor.execute(statement)
+                conn.commit()
+                print(f"Successfully executed: {statement}")
+            except mysql.connector.Error as err:
+                if err.errno == 1060:  # Duplicate column error
+                    print(f"Column already exists, skipping: {statement}")
+                else:
+                    print(f"Error executing {statement}: {err}")
     except Exception as e:
         print(f"[ERROR] {e}")
     finally:
@@ -31,4 +43,4 @@ def clear_table_rows():
         conn.close()
 
 if __name__ == "__main__":
-    clear_table_rows()
+    add_new_columns()
