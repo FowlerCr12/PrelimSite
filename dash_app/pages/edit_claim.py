@@ -583,6 +583,46 @@ def layout(cid=None, **other_kwargs):
                 }
             ),
 
+            # Add new RCV Loss fields
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Dwelling Unit RCV Loss",
+                        id="dwelling-unit-rcv-loss",
+                        value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("dwelling-unit-rcv-loss")
+                    ),
+                    dmc.TextInput(
+                        label="Detached Garage RCV Loss",
+                        id="detached-garage-rcv-loss",
+                        value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("detached-garage-rcv-loss")
+                    ),
+                ],
+                justify="space-between"
+            ),
+            dmc.Group(
+                [
+                    dmc.TextInput(
+                        label="Improvements RCV Loss",
+                        id="improvements-rcv-loss",
+                        value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("improvements-rcv-loss")
+                    ),
+                    dmc.TextInput(
+                        label="Contents RCV Loss",
+                        id="contents-rcv-loss",
+                        value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
+                        placeholder="Enter RCV Loss amount",
+                        style=get_style("contents-rcv-loss")
+                    ),
+                ],
+                justify="space-between"
+            ),
+
         ],
         # Removed gap or spacing usage entirely
         style={"padding": "20px"}
@@ -627,6 +667,11 @@ def layout(cid=None, **other_kwargs):
         State("final-report-paragraph", "value"),
         State("claim-summary-par", "value"),
         State("review-status", "value"),
+        # Add new RCV Loss states
+        State("dwelling-unit-rcv-loss", "value"),
+        State("detached-garage-rcv-loss", "value"),
+        State("improvements-rcv-loss", "value"),
+        State("contents-rcv-loss", "value"),
     ],
     prevent_initial_call=True
 )
@@ -640,7 +685,9 @@ def save_claim(
     claim_assigned_date, claim_contact_date, claim_inspection_date,
     preliminary_report_par, insured_communication_paragraph, claim_reserve_paragraph,
     insured_concern_paragraph, adjuster_response_paragraph, supporting_doc_paragraph,
-    next_steps_paragraph, final_report_paragraph, claim_summary_par, review_status
+    next_steps_paragraph, final_report_paragraph, claim_summary_par, review_status,
+    dwelling_unit_rcv_loss, detached_garage_rcv_loss,
+    improvements_rcv_loss, contents_rcv_loss
 ):
     """
     When the user clicks 'Save Changes', update the database with the new values.
@@ -691,6 +738,10 @@ def save_claim(
             Next_Steps_Paragraph = %s,
             Final_Report_Paragraph = %s,
             Claim_Summary_Par = %s,
+            DwellingUnit_Insured_Damage_RCV_Loss = %s,
+            DetachedGarage_Insured_Damage_RCV_Loss = %s,
+            Improvements_Insured_Damage_RCV_Loss = %s,
+            Contents_Insured_Damage_RCV_Loss = %s,
             Review_Status = %s
         WHERE id = %s
         """
@@ -730,6 +781,10 @@ def save_claim(
             next_steps_paragraph,
             final_report_paragraph,
             claim_summary_par,
+            dwelling_unit_rcv_loss,
+            detached_garage_rcv_loss,
+            improvements_rcv_loss,
+            contents_rcv_loss,
             review_status,
 
             # WHERE

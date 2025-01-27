@@ -180,6 +180,53 @@ def extract_first_7_pages_from_pdf(pdf_path):
         print(f"[ERROR] Extracting text from {pdf_path}: {e}")
         return ""
 
+def extract_proof_of_loss_page(final_pdf_path, prelim_pdf_path, output_path, search_text="Proof Of Loss"):
+    """
+    Extract Proof of Loss page from final_pdf_path and append it to prelim_pdf_path,
+    saving the result to output_path.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        # Open the Final Report to find Proof of Loss page
+        with open(final_pdf_path, "rb") as f:
+            final_reader = PyPDF2.PdfReader(f)
+            
+            # Find the Proof of Loss page
+            pol_page = None
+            for page_index in range(len(final_reader.pages)):
+                page = final_reader.pages[page_index]
+                page_text = page.extract_text() or ""
+                if search_text.lower() in page_text.lower():
+                    pol_page = page
+                    break
+            
+            if pol_page is None:
+                print(f"[ERROR] No '{search_text}' page found in Final Report")
+                return False
+            
+            # Open Prelim Binder and create merged PDF
+            with open(prelim_pdf_path, "rb") as prelim_f:
+                prelim_reader = PyPDF2.PdfReader(prelim_f)
+                pdf_writer = PyPDF2.PdfWriter()
+                
+                # Add all pages from Prelim Binder
+                for page in prelim_reader.pages:
+                    pdf_writer.add_page(page)
+                
+                # Add the Proof of Loss page
+                pdf_writer.add_page(pol_page)
+                
+                # Save the merged PDF
+                with open(output_path, "wb") as out_f:
+                    pdf_writer.write(out_f)
+                
+                print(f"[DEBUG] Successfully appended Proof of Loss page to {output_path}")
+                return True
+                
+    except Exception as e:
+        print(f"[ERROR] Failed to extract and append Proof of Loss page: {e}")
+        return False
+
 ###########################################
 # MYSQL DB SETUP
 ###########################################
@@ -378,11 +425,29 @@ try:
 
                         final_pdf_path = download_pdf_via_requests(final_url, cid)
                         if final_pdf_path:
+                            # Extract text for notes
                             fr_text = extract_first_7_pages_from_pdf(final_pdf_path)
-                            # Append text to notes file
                             with open(notes_file_path, "a", encoding="utf-8") as file:
                                 file.write("\n\n===== Final Report Text (First 7 Pages) =====\n")
                                 file.write(fr_text + "\n")
+
+                            # If we have a prelim binder PDF, append Proof of Loss page
+                            if binder_spaces_link:
+                                prelim_path = os.path.join(PDF_FOLDER, f"{cid}.pdf")
+                                merged_path = os.path.join(PDF_FOLDER, f"{cid}_with_pol.pdf")
+                                
+                                if extract_proof_of_loss_page(final_pdf_path, prelim_path, merged_path):
+                                    # Upload the new merged PDF
+                                    binder_key = f"pdfs/{cid}_with_pol.pdf"
+                                    uploaded_pdf_key = upload_file_to_spaces(merged_path, SPACES_BUCKET, binder_key)
+                                    if uploaded_pdf_key:
+                                        binder_spaces_link = get_spaces_public_url(uploaded_pdf_key)
+                                    
+                                    # Clean up the merged PDF
+                                    try:
+                                        os.remove(merged_path)
+                                    except Exception as del_e:
+                                        print(f"[ERROR] Removing merged PDF: {del_e}")
 
                             # rename notes if final found
                             final_notes_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")

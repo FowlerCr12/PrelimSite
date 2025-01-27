@@ -149,6 +149,10 @@ def create_claims_table_if_not_exists():
       Next_Steps_Paragraph VARCHAR(1000),
       Final_Report_Paragraph VARCHAR(1000),
       Claim_Summary_Par VARCHAR(1000),
+      DwellingUnit_Insured_Damage_RCV_Loss VARCHAR(255),
+      DetachedGarage_Insured_Damage_RCV_Loss VARCHAR(255),
+      Improvements_Insured_Damage_RCV_Loss VARCHAR(255),
+      Contents_Insured_Damage_RCV_Loss VARCHAR(255),
 
       -- Additional column to store final docx link:
       report_spaces_link VARCHAR(255),
@@ -249,6 +253,21 @@ def store_claim_in_mysql(replacements, claim_number):
     print(f"Determined claim type: {claim_type}")
     replacements["claim_type"] = claim_type
 
+    def clean_rcv_value(value):
+        """Helper function to clean RCV values"""
+        if not value:  # Handles None or empty string
+            return "N/A"
+        value = str(value).strip()
+        if value in ["", "$", "$0", "$0.00", "0", "0.00"]:
+            return "N/A"
+        return value
+
+    # Extract and clean RCV Loss values
+    DwellingUnit_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DwellingUnit_Insured_Damage_RCV_Loss"))
+    DetachedGarage_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DetachedGarage_Insured_Damage_RCV_Loss"))
+    Improvements_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Improvements_Insured_Damage_RCV_Loss"))
+    Contents_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Contents_Insured_Damage_RCV_Loss"))
+
     update_sql = """
     UPDATE claims SET
         extracted_json = %s,
@@ -282,7 +301,11 @@ def store_claim_in_mysql(replacements, claim_number):
         Next_Steps_Paragraph = %s,
         Final_Report_Paragraph = %s,
         Claim_Summary_Par = %s,
-        Review_Status = 'In Review'
+        Review_Status = 'In Review',
+        DwellingUnit_Insured_Damage_RCV_Loss = %s,
+        DetachedGarage_Insured_Damage_RCV_Loss = %s,
+        Improvements_Insured_Damage_RCV_Loss = %s,
+        Contents_Insured_Damage_RCV_Loss = %s
     WHERE claim_number = %s
     """
 
@@ -360,7 +383,11 @@ def store_claim_in_mysql(replacements, claim_number):
         Next_Steps_Paragraph,
         Final_Report_Paragraph,
         Claim_Summary_Par,
-        claim_number
+        claim_number,
+        DwellingUnit_Insured_Damage_RCV_Loss,
+        DetachedGarage_Insured_Damage_RCV_Loss,
+        Improvements_Insured_Damage_RCV_Loss,
+        Contents_Insured_Damage_RCV_Loss
     )
 
     # 4) Execute UPDATE
@@ -569,7 +596,7 @@ def process_claim_pair(pdf_path, txt_path, claim_number):
     For "Notes_On_Supporting_Documents" provide a short summary on the supporting claim documents the insured has provided, whether that be pictures, videos, lease agreements, mortgage agreements, or anything relevant to the claim. If a public adjuster (PA) has been used, note this here. 
     For "Next_Claim_Steps" provide a short summary detailing the next steps the adjuster is taking/working through in order to ensure the claim comes to a close.
     For "Basic_Claim_Summary" provide quick summary on the information that has been looked through and summarized in previous sections.
-    For "Final_Report_Summary" provide a quick summary of the overall final report which is found at the end of the information supplied to you. Additionally, make sure you write information on denials if there were any in the claim. Provide a short snippet on the amount of the estimate as well. Make sure that the "Insured Damage RCV loss" is provided here for both Coverage A and Coverage B (if claim contains Coverage B). The RCV is provided in three numbers. The Insured damage RCV loss is very important. Make sure not to get it confused with any other numbers. (i.e. Property pre-loss value RCV). Note, there will not always be a final report given to you. If this is the case, simply enter the information "No Final Report at this time." For this json entry. 
+    For "Final_Report_Summary" provide a quick summary of the overall final report which is found at the end of the information supplied to you. Additionally, make sure you write information on denials if there were any in the claim. Provide a short snippet on the amount of the estimate as well. Note, there will not always be a final report given to you. If this is the case, simply enter the information "No Final Report at this time." For this json entry. 
     Final note: PLease ensure you are thorough and 100% accurate. It is imperative that the information you provide is 100% correct. Additionally, if you have trouble finding the final report, if there even is one, it will be marked with "===== Final Report Text (First 7 Pages) =====" at the start of the information. 
     """
     ai_data = call_openai_for_json(text_content, custom_prompt)
