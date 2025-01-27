@@ -110,13 +110,13 @@ def layout(cid=None, **other_kwargs):
         # Get the corresponding JSON type for this field
         json_type = field_type_mapping.get(field_id)
         if not json_type:
-            return .90  # Default confidence if no mapping exists
+            return 0.9  # Default confidence if no mapping exists
         
         if json_data and 'entities' in json_data:
             for entity in json_data['entities']:
                 if entity.get('type') == json_type:
-                    return entity.get('confidence', 1.0)
-        return 1.0
+                    return entity.get('confidence', 0.9)
+        return 0.9  # Default to low confidence if not found
 
     def get_style(field_id, base_style=None):
         base_style = base_style or {}
@@ -192,7 +192,7 @@ def layout(cid=None, **other_kwargs):
                     "backgroundColor": "transparent"  # Ensure input background is transparent
                 }
             })
-        elif confidence < 1:
+        elif confidence < 0.96:  # Changed from 1 to 0.96
             base_style.update({
                 "backgroundColor": "#ffebee",
                 "borderColor": "#ef9a9a",
