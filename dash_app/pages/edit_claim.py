@@ -146,15 +146,21 @@ def layout(cid=None, **other_kwargs):
             "borderRadius": "8px",
             "borderWidth": "1px",
             "borderStyle": "solid",
-            "transition": "all 0.2s ease-in-out",  # Smooth transition for hover effects
-            "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"  # Subtle shadow
+            "transition": "all 0.2s ease-in-out",
+            "boxShadow": "0 1px 3px rgba(0,0,0,0.1)",
+            "padding": "8px 12px",  # Added padding inside the input
+            "marginBottom": "10px",  # Space between inputs
+            "input": {  # Styles for the actual input element
+                "padding": "8px",
+                "fontSize": "14px",
+                "lineHeight": "1.5",
+            }
         })
         
         # Get the correct database column name
         db_field = field_mapping.get(field_id, field_id)
-        value = claim_data.get(db_field)  # Get the field value
+        value = claim_data.get(db_field)
         
-        # Handle None values and strip whitespace if it's a string
         if value is None:
             value = ""
         elif isinstance(value, str):
@@ -162,34 +168,49 @@ def layout(cid=None, **other_kwargs):
         
         confidence = get_confidence(field_id)
         
-        if not value:  # Check if field is blank or only whitespace
-            print(f"DEBUG: Applying yellow style to {field_id} (blank field)")
+        if not value:
             base_style.update({
-                "backgroundColor": "#fff8e1",  # Softer yellow
-                "borderColor": "#ffd54f",      # Warmer yellow
+                "backgroundColor": "#fff8e1",
+                "borderColor": "#ffd54f",
                 "&:hover": {
-                    "borderColor": "#ffb300",  # Darker yellow on hover
+                    "borderColor": "#ffb300",
                     "boxShadow": "0 2px 4px rgba(255,179,0,0.15)"
+                },
+                "input": {
+                    "padding": "8px",
+                    "fontSize": "14px",
+                    "lineHeight": "1.5",
+                    "backgroundColor": "transparent"  # Ensure input background is transparent
                 }
             })
         elif confidence < 0.96:
-            print(f"DEBUG: Applying red style to {field_id}")
             base_style.update({
-                "backgroundColor": "#ffebee",  # Softer red
-                "borderColor": "#ef9a9a",      # Lighter red
+                "backgroundColor": "#ffebee",
+                "borderColor": "#ef9a9a",
                 "&:hover": {
-                    "borderColor": "#ef5350",  # Darker red on hover
+                    "borderColor": "#ef5350",
                     "boxShadow": "0 2px 4px rgba(239,83,80,0.15)"
+                },
+                "input": {
+                    "padding": "8px",
+                    "fontSize": "14px",
+                    "lineHeight": "1.5",
+                    "backgroundColor": "transparent"
                 }
             })
         else:
-            print(f"DEBUG: Applying green style to {field_id}")
             base_style.update({
-                "backgroundColor": "#f1f8e9",  # Softer green
-                "borderColor": "#aed581",      # Lighter green
+                "backgroundColor": "#f1f8e9",
+                "borderColor": "#aed581",
                 "&:hover": {
-                    "borderColor": "#7cb342",  # Darker green on hover
+                    "borderColor": "#7cb342",
                     "boxShadow": "0 2px 4px rgba(124,179,66,0.15)"
+                },
+                "input": {
+                    "padding": "8px",
+                    "fontSize": "14px",
+                    "lineHeight": "1.5",
+                    "backgroundColor": "transparent"
                 }
             })
             
