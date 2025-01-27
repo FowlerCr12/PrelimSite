@@ -304,8 +304,10 @@ try:
             time.sleep(30)
             continue
     
-    # Existing processing code
+        # Process all rows on the single page
         rows = driver.find_elements(By.XPATH, "//tbody/tr")
+        print(f"[DEBUG] Found {len(rows)} claims to process")
+        
         for row in rows:
             try:
                 claim_link = row.find_element(By.XPATH, ".//td/a[contains(@href, 'pg=notes')]")
@@ -495,20 +497,9 @@ try:
                 #print(f"[ERROR] Unexpected row-level error: {row_e}")
                 continue
 
-        # Attempt next page
-        print("[DEBUG] Attempting to click Next page...")
-        try:
-            next_btn = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Next')]"))
-            )
-            next_btn.click()
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//tbody"))
-            )
-            print("[DEBUG] Next page loaded.")
-        except:
-            print("[DEBUG] No more pages or couldn't click Next.")
-            break
+        # After processing all rows, exit the while loop
+        print("[DEBUG] Finished processing all claims")
+        break
 
 except Exception as e:
     print(f"[FATAL] Top-level error: {e}")
