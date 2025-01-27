@@ -71,7 +71,7 @@ def layout(cid=None, **other_kwargs):
     json_data = {}
     try:
         if claim_data.get('extracted_json'):  # Changed from json_output to extracted_json
-            json_data = json.loads(claim_data['extracted_json'])
+            json_data = json.loads(claim_data['confidence_json'])
     except json.JSONDecodeError:
         print("Error decoding JSON")
 

@@ -113,11 +113,14 @@ def create_claims_table_if_not_exists():
         database=DB_NAME
     )
     cursor = conn.cursor()
+    
+    # First create table if it doesn't exist
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS claims (
       id INT AUTO_INCREMENT PRIMARY KEY,
       claim_number VARCHAR(255) NOT NULL UNIQUE,
       extracted_json JSON NOT NULL,
+      confidence_json JSON,
 
       Policyholder VARCHAR(255),
       Loss_Address VARCHAR(255),
@@ -162,8 +165,28 @@ def create_claims_table_if_not_exists():
     );
     """
     cursor.execute(create_table_sql)
-    cursor.close()
-    conn.close()
+    
+    # Then check if confidence_json column exists, add it if it doesn't
+    try:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'claims'
+            AND COLUMN_NAME = 'confidence_json'
+            AND TABLE_SCHEMA = DATABASE()
+        """)
+        column_exists = cursor.fetchone()[0]
+        
+        if not column_exists:
+            print("Adding confidence_json column to claims table...")
+            cursor.execute("ALTER TABLE claims ADD COLUMN confidence_json JSON")
+            conn.commit()
+            print("Successfully added confidence_json column")
+    except Exception as e:
+        print(f"Error checking/adding confidence_json column: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 def reformat_mdy_to_ymd(date_str):
     """
@@ -194,7 +217,7 @@ def reformat_mdy_to_ymd(date_str):
         # If it's not in MM/DD/YYYY format (or invalid), return as-is
         return date_str
 
-def store_claim_in_mysql(replacements, claim_number):
+def store_claim_in_mysql(replacements, claim_number, confidence_data):
     """
     Update an existing row in 'claims' table with data from 'replacements' dict and 'claim_number'.
     """
@@ -262,6 +285,7 @@ def store_claim_in_mysql(replacements, claim_number):
         update_sql = """
         UPDATE claims SET
             extracted_json = %s,
+            confidence_json = %s,
             Policyholder = %s,
             Loss_Address = %s,
             Date_Of_Loss = %s,
@@ -302,6 +326,7 @@ def store_claim_in_mysql(replacements, claim_number):
 
         # Convert the replacements dict to JSON for storage
         extracted_json_str = json.dumps(replacements)
+        confidence_json_str = json.dumps(confidence_data)
 
         # 1) Extract fields from replacements
         Policyholder = replacements.get("Policy_Holder", "")
@@ -344,6 +369,7 @@ def store_claim_in_mysql(replacements, claim_number):
         # 3) Pack the parameters for the UPDATE statement
         data_tuple = (
             extracted_json_str,
+            confidence_json_str,
             Policyholder,
             Loss_Address,
             Date_Of_Loss,
@@ -640,8 +666,11 @@ def process_claim_pair(pdf_path, txt_path, claim_number):
     replacements.pop("Insurer", None)
     print("success 11")
 
-    # store in MySQL
-    store_claim_in_mysql(replacements, claim_number)
+    # Extract confidence values
+    confidence_data = extract_confidence_values(docai_data)
+    
+    # Modified store in MySQL to include confidence data
+    store_claim_in_mysql(replacements, claim_number, confidence_data)
 
     # 7) docx replace
     docx_template = "/opt/PrelimScraper/template.docx"  # <--- ADJUST path
@@ -655,6 +684,21 @@ def process_claim_pair(pdf_path, txt_path, claim_number):
     doc.save(output_docx_path)
     print("[DEBUG] Created final docx:", output_docx_path)
     return output_docx_path
+
+def extract_confidence_values(docai_data):
+    """
+    Extract confidence values from Document AI output into a simplified format.
+    """
+    confidence_data = {"entities": []}
+    
+    for entity in docai_data.get("entities", []):
+        confidence_data["entities"].append({
+            "type": entity.get("type", ""),
+            "confidence": entity.get("confidence", 1.0),
+            "mentionText": entity.get("mentionText", "")
+        })
+    
+    return confidence_data
 
 ##############################################################################
 #  FLASK ROUTES
