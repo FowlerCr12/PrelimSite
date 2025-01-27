@@ -7,26 +7,6 @@ DATABASE = "defaultdb"
 TABLE_NAME = "claims"  # <-- change to your table name
 PORT = 25060            # If needed, set your custom port here
 
-def truncate_table():
-    conn = mysql.connector.connect(
-        host=HOST,
-        port=PORT,
-        user=USER,
-        password=PASSWORD,
-        database=DATABASE
-    )
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute(f"TRUNCATE TABLE {TABLE_NAME}")
-        conn.commit()
-        print(f"Successfully truncated table: {TABLE_NAME}")
-    except mysql.connector.Error as err:
-        print(f"Error truncating table: {err}")
-    finally:
-        cursor.close()
-        conn.close()
-
 def modify_columns():
     conn = mysql.connector.connect(
         host=HOST,
@@ -57,4 +37,4 @@ def modify_columns():
         conn.close()
 
 if __name__ == "__main__":
-    truncate_table()
+    modify_columns()
