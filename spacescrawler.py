@@ -492,7 +492,7 @@ try:
                     print(f"[DEBUG] Missing either notes or binder for {cid}, skipping DB insert.")
 
             except Exception as row_e:
-                print(f"[ERROR] Unexpected row-level error: {row_e}")
+                #print(f"[ERROR] Unexpected row-level error: {row_e}")
                 continue
 
         # Attempt next page
