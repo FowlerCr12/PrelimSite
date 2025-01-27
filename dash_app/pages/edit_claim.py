@@ -1005,6 +1005,10 @@ def download_docx(n_clicks, row_id):
         r"\{\{Policy_Number\}\}": row.get("Policy_Number", ""),
         r"\{\{claim_number\}\}": row.get("claim_number", ""),
         r"\{\{loss_address\}\}": row.get("Loss_Address", ""),
+        r"\{\{DwellingUnit_Insured_Damage_RCV_Loss\}\}": row.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
+        r"\{\{DetachedGarage_Insured_Damage_RCV_Loss\}\}": row.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
+        r"\{\{Improvements_Insured_Damage_RCV_Loss\}\}": row.get("Improvements_Insured_Damage_RCV_Loss", ""),
+        r"\{\{Contents_Insured_Damage_RCV_Loss\}\}": row.get("Contents_Insured_Damage_RCV_Loss", ""),
         
 
 
