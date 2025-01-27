@@ -68,12 +68,15 @@ def layout(cid=None, **other_kwargs):
     store_cid = dcc.Store(id="cid-store", data=cid)
 
     # Parse JSON output from the correct column name
-    json_data = {}
     try:
-        if claim_data.get('extracted_json'):  # Changed from json_output to extracted_json
-            json_data = json.loads(claim_data['confidence_json'])
-    except json.JSONDecodeError:
-        print("Error decoding JSON")
+        json_data = json.loads(claim_data['confidence_json']) if claim_data.get('confidence_json') else {
+            "entities": []
+        }
+    except (json.JSONDecodeError, TypeError):
+        print(f"Warning: Invalid confidence_json data: {claim_data.get('confidence_json')}")
+        json_data = {
+            "entities": []
+        }
 
     # Create a mapping between your form fields and JSON types
     field_type_mapping = {
