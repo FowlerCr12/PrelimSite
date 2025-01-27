@@ -207,196 +207,194 @@ def store_claim_in_mysql(replacements, claim_number):
     )
     cursor = conn.cursor()
 
-    # First, check if the claim is in "Processing" status
-    check_sql = "SELECT Review_Status FROM claims WHERE claim_number = %s"
-    cursor.execute(check_sql, (claim_number,))
-    result = cursor.fetchone()
-    
-    if not result or result[0] != "Processing":
+    try:
+        # Determine claim type based on coverage values
+        coverage_building = replacements.get("Coverage-A_Building_Coverage", "0")
+        coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "0")
+        
+        print(f"Raw building coverage: {coverage_building}")
+        print(f"Raw contents coverage: {coverage_contents}")
+        
+        # More robust cleaning of values
+        def clean_currency(value):
+            try:
+                # Remove all non-numeric characters except decimal point
+                cleaned = ''.join(c for c in str(value) if c.isdigit() or c == '.')
+                print(f"Cleaned value: {cleaned} from original: {value}")
+                return float(cleaned or "0")
+            except (ValueError, TypeError):
+                print(f"Error converting value: {value}")
+                return 0.0
+        
+        building_value = clean_currency(coverage_building)
+        contents_value = clean_currency(coverage_contents)
+        
+        print(f"Final building value: {building_value}")
+        print(f"Final contents value: {contents_value}")
+        
+        if building_value == 0 and contents_value > 0:
+            claim_type = "Contents Only"
+        elif building_value > 0 and contents_value == 0:
+            claim_type = "Building Only"
+        elif building_value > 0 and contents_value > 0:
+            claim_type = "Building and Contents"
+        else:
+            claim_type = "Unknown"  # Default case if both are 0
+            
+        print(f"Determined claim type: {claim_type}")
+        replacements["claim_type"] = claim_type
+
+        def clean_rcv_value(value):
+            """Helper function to clean RCV values"""
+            if not value:  # Handles None or empty string
+                return "N/A"
+            value = str(value).strip()
+            if value in ["", "$", "$0", "$0.00", "0", "0.00"]:
+                return "N/A"
+            return value
+
+        # Extract and clean RCV Loss values
+        DwellingUnit_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DwellingUnit_Insured_Damage_RCV_Loss"))
+        DetachedGarage_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DetachedGarage_Insured_Damage_RCV_Loss"))
+        Improvements_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Improvements_Insured_Damage_RCV_Loss"))
+        Contents_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Contents_Insured_Damage_RCV_Loss"))
+
+        update_sql = """
+        UPDATE claims SET
+            extracted_json = %s,
+            Policyholder = %s,
+            Loss_Address = %s,
+            Date_Of_Loss = %s,
+            Insurer = %s,
+            Adjuster_Name = %s,
+            Policy_Number = %s,
+            claim_type = %s,
+            Insured_Contact_Info = %s,
+            Adjuster_Contact_Info = %s,
+            coverage_building = %s,
+            Coverage_A_Deductible = %s,
+            Coverage_A_Reserve = %s,
+            Coverage_A_Advance = %s,
+            coverage_contents = %s,
+            Coverage_B_Deductible = %s,
+            Coverage_B_Reserve = %s,
+            Coverage_B_Advance = %s,
+            Current_Claim_Status_Par = %s,
+            Claim_Assigned_Date = %s,
+            Claim_Contact_Date = %s,
+            Claim_Inspection_Date = %s,
+            Preliminary_Report_Par = %s,
+            Insured_Communication_Paragraph = %s,
+            Claim_Reserve_Paragraph = %s,
+            Insured_Concern_Paragraph = %s,
+            Adjuster_Response_Paragraph = %s,
+            Supporting_Doc_Paragraph = %s,
+            Next_Steps_Paragraph = %s,
+            Final_Report_Paragraph = %s,
+            Claim_Summary_Par = %s,
+            DwellingUnit_Insured_Damage_RCV_Loss = %s,
+            DetachedGarage_Insured_Damage_RCV_Loss = %s,
+            Improvements_Insured_Damage_RCV_Loss = %s,
+            Contents_Insured_Damage_RCV_Loss = %s,
+            Review_Status = 'In Review'
+        WHERE claim_number = %s
+        """
+
+        # Convert the replacements dict to JSON for storage
+        extracted_json_str = json.dumps(replacements)
+
+        # 1) Extract fields from replacements
+        Policyholder = replacements.get("Policy_Holder", "")
+        Loss_Address = replacements.get("Property_Address", "")
+        raw_Date_Of_Loss = replacements.get("Date_Of_Loss", "")
+        Insurer = replacements.get("Insurer_Name", "")
+        Adjuster_Name = replacements.get("Adjuster_Name", "")
+        Policy_Number = replacements.get("Policy_Number", "")
+        Claim_Type = replacements.get("claim_type", replacements.get("Claim_Type", ""))
+        Insured_Contact_Info = replacements.get("Policyholder_Contact_Info", "")
+        Adjuster_Contact_Info = replacements.get("Adjuster_Email", "")
+        coverage_building = replacements.get("Coverage-A_Building_Coverage", "")
+        Coverage_A_Deductible = replacements.get("Coverage-A_Building_Deductible", "")
+        Coverage_A_Reserve = replacements.get("Coverage-A-Building_Reserve", "")
+        Coverage_A_Advance = replacements.get("Coverage-A-Building_Advance", "")
+        coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "")
+        Coverage_B_Deductible = replacements.get("Coverage-B_Contents_Deductible", "")
+        Coverage_B_Reserve = replacements.get("Coverage-B-Contents_Reserve", "")
+        Coverage_B_Advance = replacements.get("Coverage-B-Contents_Advance", "")
+        Current_Claim_Status_Par = replacements.get("Claim_Status_Writeup", "")
+        raw_Claim_Assigned_Date = replacements.get("Date_Assigned", "")
+        raw_Claim_Contact_Date = replacements.get("Date_Contacted", "")
+        raw_Claim_Inspection_Date = replacements.get("Date_Inspected", "")
+        Preliminary_Report_Par = replacements.get("Preliminary_Report_Notes", "")
+        Insured_Communication_Paragraph = replacements.get("Communication_With_Insured", "")
+        Claim_Reserve_Paragraph = replacements.get("Claim_Reserve_Notes", "")
+        Insured_Concern_Paragraph = replacements.get("Insured_Concerns", "")
+        Adjuster_Response_Paragraph = replacements.get("Adj_Response_And_Comm_With_Insured", "")
+        Supporting_Doc_Paragraph = replacements.get("Notes_On_Supporting_Documents", "")
+        Next_Steps_Paragraph = replacements.get("Next_Claim_Steps", "")
+        Final_Report_Paragraph = replacements.get("Final_Report_Summary", "")
+        Claim_Summary_Par = replacements.get("Basic_Claim_Summary", "")
+
+        # 2) Reformat dates (from MM/DD/YYYY -> YYYY-MM-DD) before inserting
+        Date_Of_Loss = reformat_mdy_to_ymd(raw_Date_Of_Loss)
+        Claim_Assigned_Date = reformat_mdy_to_ymd(raw_Claim_Assigned_Date)
+        Claim_Contact_Date = reformat_mdy_to_ymd(raw_Claim_Contact_Date)
+        Claim_Inspection_Date = reformat_mdy_to_ymd(raw_Claim_Inspection_Date)
+
+        # 3) Pack the parameters for the UPDATE statement
+        data_tuple = (
+            extracted_json_str,
+            Policyholder,
+            Loss_Address,
+            Date_Of_Loss,
+            Insurer,
+            Adjuster_Name,
+            Policy_Number,
+            Claim_Type,
+            Insured_Contact_Info,
+            Adjuster_Contact_Info,
+            coverage_building,
+            Coverage_A_Deductible,
+            Coverage_A_Reserve,
+            Coverage_A_Advance,
+            coverage_contents,
+            Coverage_B_Deductible,
+            Coverage_B_Reserve,
+            Coverage_B_Advance,
+            Current_Claim_Status_Par,
+            Claim_Assigned_Date,
+            Claim_Contact_Date,
+            Claim_Inspection_Date,
+            Preliminary_Report_Par,
+            Insured_Communication_Paragraph,
+            Claim_Reserve_Paragraph,
+            Insured_Concern_Paragraph,
+            Adjuster_Response_Paragraph,
+            Supporting_Doc_Paragraph,
+            Next_Steps_Paragraph,
+            Final_Report_Paragraph,
+            Claim_Summary_Par,
+            DwellingUnit_Insured_Damage_RCV_Loss,
+            DetachedGarage_Insured_Damage_RCV_Loss,
+            Improvements_Insured_Damage_RCV_Loss,
+            Contents_Insured_Damage_RCV_Loss,
+            claim_number
+        )
+
+        # 4) Execute UPDATE
+        cursor.execute(update_sql, data_tuple)
+        conn.commit()
+        print(f"[DEBUG] Successfully updated claim {claim_number} in database")
+        return True
+
+    except Exception as e:
+        print(f"[ERROR] Failed to update claim {claim_number} in database: {e}")
+        conn.rollback()
+        return False
+
+    finally:
         cursor.close()
         conn.close()
-        return False  # Skip processing if not in "Processing" status
-
-    # Determine claim type based on coverage values
-    coverage_building = replacements.get("Coverage-A_Building_Coverage", "0")
-    coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "0")
-    
-    print(f"Raw building coverage: {coverage_building}")
-    print(f"Raw contents coverage: {coverage_contents}")
-    
-    # More robust cleaning of values
-    def clean_currency(value):
-        try:
-            # Remove all non-numeric characters except decimal point
-            cleaned = ''.join(c for c in str(value) if c.isdigit() or c == '.')
-            print(f"Cleaned value: {cleaned} from original: {value}")
-            return float(cleaned or "0")
-        except (ValueError, TypeError):
-            print(f"Error converting value: {value}")
-            return 0.0
-    
-    building_value = clean_currency(coverage_building)
-    contents_value = clean_currency(coverage_contents)
-    
-    print(f"Final building value: {building_value}")
-    print(f"Final contents value: {contents_value}")
-    
-    if building_value == 0 and contents_value > 0:
-        claim_type = "Contents Only"
-    elif building_value > 0 and contents_value == 0:
-        claim_type = "Building Only"
-    elif building_value > 0 and contents_value > 0:
-        claim_type = "Building and Contents"
-    else:
-        claim_type = "Unknown"  # Default case if both are 0
-        
-    print(f"Determined claim type: {claim_type}")
-    replacements["claim_type"] = claim_type
-
-    def clean_rcv_value(value):
-        """Helper function to clean RCV values"""
-        if not value:  # Handles None or empty string
-            return "N/A"
-        value = str(value).strip()
-        if value in ["", "$", "$0", "$0.00", "0", "0.00"]:
-            return "N/A"
-        return value
-
-    # Extract and clean RCV Loss values
-    DwellingUnit_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DwellingUnit_Insured_Damage_RCV_Loss"))
-    DetachedGarage_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DetachedGarage_Insured_Damage_RCV_Loss"))
-    Improvements_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Improvements_Insured_Damage_RCV_Loss"))
-    Contents_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Contents_Insured_Damage_RCV_Loss"))
-
-    update_sql = """
-    UPDATE claims SET
-        extracted_json = %s,
-        Policyholder = %s,
-        Loss_Address = %s,
-        Date_Of_Loss = %s,
-        Insurer = %s,
-        Adjuster_Name = %s,
-        Policy_Number = %s,
-        claim_type = %s,
-        Insured_Contact_Info = %s,
-        Adjuster_Contact_Info = %s,
-        coverage_building = %s,
-        Coverage_A_Deductible = %s,
-        Coverage_A_Reserve = %s,
-        Coverage_A_Advance = %s,
-        coverage_contents = %s,
-        Coverage_B_Deductible = %s,
-        Coverage_B_Reserve = %s,
-        Coverage_B_Advance = %s,
-        Current_Claim_Status_Par = %s,
-        Claim_Assigned_Date = %s,
-        Claim_Contact_Date = %s,
-        Claim_Inspection_Date = %s,
-        Preliminary_Report_Par = %s,
-        Insured_Communication_Paragraph = %s,
-        Claim_Reserve_Paragraph = %s,
-        Insured_Concern_Paragraph = %s,
-        Adjuster_Response_Paragraph = %s,
-        Supporting_Doc_Paragraph = %s,
-        Next_Steps_Paragraph = %s,
-        Final_Report_Paragraph = %s,
-        Claim_Summary_Par = %s,
-        Review_Status = 'In Review',
-        DwellingUnit_Insured_Damage_RCV_Loss = %s,
-        DetachedGarage_Insured_Damage_RCV_Loss = %s,
-        Improvements_Insured_Damage_RCV_Loss = %s,
-        Contents_Insured_Damage_RCV_Loss = %s
-    WHERE claim_number = %s
-    """
-
-    # Convert the replacements dict to JSON for storage
-    extracted_json_str = json.dumps(replacements)
-
-    # 1) Extract fields from replacements
-    Policyholder = replacements.get("Policy_Holder", "")
-    Loss_Address = replacements.get("Property_Address", "")
-    raw_Date_Of_Loss = replacements.get("Date_Of_Loss", "")
-    Insurer = replacements.get("Insurer_Name", "")
-    Adjuster_Name = replacements.get("Adjuster_Name", "")
-    Policy_Number = replacements.get("Policy_Number", "")
-    Claim_Type = replacements.get("claim_type", replacements.get("Claim_Type", ""))
-    Insured_Contact_Info = replacements.get("Policyholder_Contact_Info", "")
-    Adjuster_Contact_Info = replacements.get("Adjuster_Email", "")
-    coverage_building = replacements.get("Coverage-A_Building_Coverage", "")
-    Coverage_A_Deductible = replacements.get("Coverage-A_Building_Deductible", "")
-    Coverage_A_Reserve = replacements.get("Coverage-A-Building_Reserve", "")
-    Coverage_A_Advance = replacements.get("Coverage-A-Building_Advance", "")
-    coverage_contents = replacements.get("Coverage-B_Contents_Coverage", "")
-    Coverage_B_Deductible = replacements.get("Coverage-B_Contents_Deductible", "")
-    Coverage_B_Reserve = replacements.get("Coverage-B-Contents_Reserve", "")
-    Coverage_B_Advance = replacements.get("Coverage-B-Contents_Advance", "")
-    Current_Claim_Status_Par = replacements.get("Claim_Status_Writeup", "")
-    raw_Claim_Assigned_Date = replacements.get("Date_Assigned", "")
-    raw_Claim_Contact_Date = replacements.get("Date_Contacted", "")
-    raw_Claim_Inspection_Date = replacements.get("Date_Inspected", "")
-    Preliminary_Report_Par = replacements.get("Preliminary_Report_Notes", "")
-    Insured_Communication_Paragraph = replacements.get("Communication_With_Insured", "")
-    Claim_Reserve_Paragraph = replacements.get("Claim_Reserve_Notes", "")
-    Insured_Concern_Paragraph = replacements.get("Insured_Concerns", "")
-    Adjuster_Response_Paragraph = replacements.get("Adj_Response_And_Comm_With_Insured", "")
-    Supporting_Doc_Paragraph = replacements.get("Notes_On_Supporting_Documents", "")
-    Next_Steps_Paragraph = replacements.get("Next_Claim_Steps", "")
-    Final_Report_Paragraph = replacements.get("Final_Report_Summary", "")
-    Claim_Summary_Par = replacements.get("Basic_Claim_Summary", "")
-
-    # 2) Reformat dates (from MM/DD/YYYY -> YYYY-MM-DD) before inserting
-    Date_Of_Loss = reformat_mdy_to_ymd(raw_Date_Of_Loss)
-    Claim_Assigned_Date = reformat_mdy_to_ymd(raw_Claim_Assigned_Date)
-    Claim_Contact_Date = reformat_mdy_to_ymd(raw_Claim_Contact_Date)
-    Claim_Inspection_Date = reformat_mdy_to_ymd(raw_Claim_Inspection_Date)
-
-    # 3) Pack the parameters for the UPDATE statement
-    data_tuple = (
-        extracted_json_str,
-        Policyholder,
-        Loss_Address,
-        Date_Of_Loss,
-        Insurer,
-        Adjuster_Name,
-        Policy_Number,
-        Claim_Type,
-        Insured_Contact_Info,
-        Adjuster_Contact_Info,
-        coverage_building,
-        Coverage_A_Deductible,
-        Coverage_A_Reserve,
-        Coverage_A_Advance,
-        coverage_contents,
-        Coverage_B_Deductible,
-        Coverage_B_Reserve,
-        Coverage_B_Advance,
-        Current_Claim_Status_Par,
-        Claim_Assigned_Date,
-        Claim_Contact_Date,
-        Claim_Inspection_Date,
-        Preliminary_Report_Par,
-        Insured_Communication_Paragraph,
-        Claim_Reserve_Paragraph,
-        Insured_Concern_Paragraph,
-        Adjuster_Response_Paragraph,
-        Supporting_Doc_Paragraph,
-        Next_Steps_Paragraph,
-        Final_Report_Paragraph,
-        Claim_Summary_Par,
-        claim_number,
-        DwellingUnit_Insured_Damage_RCV_Loss,
-        DetachedGarage_Insured_Damage_RCV_Loss,
-        Improvements_Insured_Damage_RCV_Loss,
-        Contents_Insured_Damage_RCV_Loss
-    )
-
-    # 4) Execute UPDATE
-    cursor.execute(update_sql, data_tuple)
-    conn.commit()
-
-    # 5) Close
-    cursor.close()
-    conn.close()
 
 
 ##############################################################################
