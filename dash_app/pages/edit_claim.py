@@ -111,6 +111,7 @@ def layout(cid=None, **other_kwargs):
         print(f"\nDEBUG get_confidence:")
         print(f"Field ID: {field_id}")
         print(f"Mapped JSON type: {json_type}")
+        print(f"json_data: {json_data}")
         
         if not json_type:
             print(f"No mapping found for field_id '{field_id}', returning default 0.90")
@@ -127,6 +128,9 @@ def layout(cid=None, **other_kwargs):
             print(f"No matching entity found for type '{json_type}', returning 1.0")
         else:
             print("No json_data or 'entities' not in json_data, returning 1.0")
+            print(f"json_data type: {type(json_data)}")
+            if json_data:
+                print(f"json_data keys: {json_data.keys()}")
         return 1.0
 
     def get_style(field_id, base_style=None):
