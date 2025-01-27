@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import pymysql
 
-dash.register_page(__name__, path="/stats")
+dash.register_page(__name__, path="/page3")
 
 def get_claims_data():
     conn = get_db_connection()
