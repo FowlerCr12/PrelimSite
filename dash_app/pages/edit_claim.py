@@ -352,7 +352,7 @@ def layout(cid=None, **other_kwargs):
             ),
 
             # ========== Coverage Fields in three columns ==========
-            dmc.Text("Coverage A - Building", size="lg", weight=500, style={"marginTop": "1rem"}),
+            dmc.Text("Coverage A - Building", size="lg", fw=500, style={"marginTop": "1rem"}),
             dmc.Grid(
                 [
                     # Column 1: Coverage and Deductible
@@ -424,7 +424,7 @@ def layout(cid=None, **other_kwargs):
             ),
 
             # Coverage B Section
-            dmc.Text("Coverage B - Contents", size="lg", weight=500, style={"marginTop": "2rem"}),
+            dmc.Text("Coverage B - Contents", size="lg", fw=500, style={"marginTop": "2rem"}),
             dmc.Grid(
                 [
                     # Column 1: Coverage and Deductible
