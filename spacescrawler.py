@@ -126,21 +126,38 @@ def download_pdf_via_requests(pdf_url, cid):
     cookie_jar = requests.cookies.RequestsCookieJar()
     for c in selenium_cookies:
         cookie_jar.set(c['name'], c['value'], domain=c['domain'])
+        print(f"[DEBUG] Added cookie: {c['name']}")
 
     local_path = os.path.join(PDF_FOLDER, f"{cid}_temp.pdf")
     try:
+        print(f"[DEBUG] Sending GET request to {pdf_url}")
         resp = requests.get(pdf_url, cookies=cookie_jar, stream=True, timeout=30)
+        print(f"[DEBUG] Response status code: {resp.status_code}")
+        print(f"[DEBUG] Response headers: {resp.headers}")
+        
         if resp.status_code == 200:
+            content_type = resp.headers.get('content-type', '')
+            if 'pdf' not in content_type.lower():
+                print(f"[WARNING] Response may not be PDF. Content-Type: {content_type}")
+            
             with open(local_path, "wb") as f:
                 for chunk in resp.iter_content(chunk_size=8192):
                     f.write(chunk)
-            print(f"[DEBUG] Downloaded PDF for Claim {cid} to {local_path}")
-            time.sleep(2)
-            return local_path
+            
+            # Verify file was created and has content
+            if os.path.exists(local_path) and os.path.getsize(local_path) > 0:
+                print(f"[DEBUG] Successfully downloaded PDF for Claim {cid} to {local_path}")
+                time.sleep(2)
+                return local_path
+            else:
+                print(f"[ERROR] Downloaded file is empty or missing: {local_path}")
         else:
-            print(f"[ERROR] Claim {cid} PDF request got status={resp.status_code}")
+            print(f"[ERROR] Claim {cid} PDF request failed with status={resp.status_code}")
+            print(f"[ERROR] Response text: {resp.text[:500]}")  # First 500 chars of error response
     except Exception as e:
-        print(f"[ERROR] Downloading PDF for Claim {cid}: {e}")
+        print(f"[ERROR] Downloading PDF for Claim {cid}: {str(e)}")
+        import traceback
+        print(f"[ERROR] Full traceback: {traceback.format_exc()}")
 
     return None
 
@@ -370,21 +387,29 @@ try:
 
                 # --- FILES PAGE ---
                 try:
+                    print(f"[DEBUG] Loading files page for claim {cid}")
                     driver.get(f"https://www.cnc-claimsource.com/claim.php?pg=files&cid={cid}")
                     WebDriverWait(driver, 10).until(
                         EC.presence_of_element_located((By.XPATH, "//table[contains(@class, 'claimcenter')]"))
                     )
+                    print(f"[DEBUG] Files page loaded successfully")
 
                     # NFIP Preliminary Binder - EXTRACT ONLY FIRST PAGE
                     try:
+                        print("[DEBUG] Looking for Preliminary Binder link...")
                         prelim_link_el = WebDriverWait(driver, 5).until(
                             EC.presence_of_element_located((By.PARTIAL_LINK_TEXT, "NFIP Preliminary Binder"))
                         )
                         prelim_url = prelim_link_el.get_attribute("href")
                         print(f"[DEBUG] Found Preliminary Binder link: {prelim_url}")
 
+                        # Try to get all PDF links for debugging
+                        all_links = driver.find_elements(By.XPATH, "//a[contains(@href, '.pdf')]")
+                        print(f"[DEBUG] All PDF links found: {[link.get_attribute('href') for link in all_links]}")
+
                         prelim_pdf_path = download_pdf_via_requests(prelim_url, cid)
                         if prelim_pdf_path:
+                            print(f"[DEBUG] Successfully downloaded Preliminary Binder to {prelim_pdf_path}")
                             # 1) Extract single page
                             single_page_path = os.path.join(PDF_FOLDER, f"{cid}_firstpage.pdf")
                             success = extract_single_page_pdf(prelim_pdf_path, single_page_path)
@@ -494,10 +519,9 @@ try:
                     print(f"[DEBUG] Missing either notes or binder for {cid}, skipping DB insert.")
 
             except Exception as row_e:
-                #print(f"[ERROR] Unexpected row-level error: {row_e}")
+                print(f"[ERROR] Unexpected row-level error for claim: {row_e}")
                 continue
 
-        # After processing all rows, exit the while loop
         print("[DEBUG] Finished processing all claims")
         break
 
