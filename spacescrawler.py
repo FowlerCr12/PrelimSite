@@ -12,6 +12,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+from dotenv import load_dotenv
 
 ###########################################
 # CONFIGURATION
@@ -22,6 +23,7 @@ SPACES_SECRET = os.getenv('SPACES_SECRET')
 SPACES_ENDPOINT = "nyc3.digitaloceanspaces.com"
 SPACES_BUCKET = "prelim-program-file-storage"
 SPACES_REGION = "nyc3"
+load_dotenv()
 
 # Website login
 USERNAME = "craigfowler"
