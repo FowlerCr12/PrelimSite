@@ -353,10 +353,12 @@ def layout(cid=None, **other_kwargs):
 
             # ========== Coverage Fields in three columns ==========
             dmc.Text("Coverage A - Building", size="lg", fw=500, style={"marginTop": "1rem"}),
-            dmc.Grid(
-                [
+            dmc.SimpleGrid(
+                cols=3,
+                spacing="xl",
+                children=[
                     # Column 1: Coverage and Deductible
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Coverage A",
@@ -372,10 +374,9 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("coverage-a-deductible")
                             ),
                         ],
-                        span=4,
                     ),
                     # Column 2: RCV Loss Values
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Dwelling Unit RCV Loss",
@@ -399,10 +400,9 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("improvements-rcv-loss")
                             ),
                         ],
-                        span=4,
                     ),
                     # Column 3: Reserve and Advance
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Coverage A Reserve",
@@ -417,18 +417,18 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("coverage-a-advance")
                             ),
                         ],
-                        span=4,
                     ),
                 ],
-                gutter="xl",
             ),
 
             # Coverage B Section
             dmc.Text("Coverage B - Contents", size="lg", fw=500, style={"marginTop": "2rem"}),
-            dmc.Grid(
-                [
+            dmc.SimpleGrid(
+                cols=3,
+                spacing="xl",
+                children=[
                     # Column 1: Coverage and Deductible
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Coverage B",
@@ -444,10 +444,9 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("coverage-b-deductible")
                             ),
                         ],
-                        span=4,
                     ),
                     # Column 2: RCV Loss Value
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Contents RCV Loss",
@@ -457,10 +456,9 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("contents-rcv-loss")
                             ),
                         ],
-                        span=4,
                     ),
                     # Column 3: Reserve and Advance
-                    dmc.Grid.Col(
+                    dmc.Stack(
                         [
                             dmc.TextInput(
                                 label="Coverage B Reserve",
@@ -475,10 +473,8 @@ def layout(cid=None, **other_kwargs):
                                 style=get_style("coverage-b-advance")
                             ),
                         ],
-                        span=4,
                     ),
                 ],
-                gutter="xl",
             ),
 
             # ========== Paragraph Field (full width) ==========
