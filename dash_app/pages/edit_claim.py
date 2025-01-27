@@ -392,13 +392,6 @@ def layout(cid=None, **other_kwargs):
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("detached-garage-rcv-loss")
                             ),
-                            dmc.TextInput(
-                                label="Improvements RCV Loss",
-                                id="improvements-rcv-loss",
-                                value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
-                                placeholder="Enter RCV Loss amount",
-                                style=get_style("improvements-rcv-loss")
-                            ),
                         ],
                     ),
                     # Column 3: Reserve and Advance
@@ -445,7 +438,7 @@ def layout(cid=None, **other_kwargs):
                             ),
                         ],
                     ),
-                    # Column 2: RCV Loss Value
+                    # Column 2: RCV Loss Values
                     dmc.Stack(
                         [
                             dmc.TextInput(
@@ -454,6 +447,13 @@ def layout(cid=None, **other_kwargs):
                                 value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("contents-rcv-loss")
+                            ),
+                            dmc.TextInput(
+                                label="Improvements RCV Loss",
+                                id="improvements-rcv-loss",
+                                value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
+                                placeholder="Enter RCV Loss amount",
+                                style=get_style("improvements-rcv-loss")
                             ),
                         ],
                     ),
