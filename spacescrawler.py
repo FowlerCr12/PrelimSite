@@ -306,7 +306,7 @@ try:
     select_elem = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "ico"))
     )
-    Select(select_elem).select_by_visible_text("National General Insurance Company")
+    Select(select_elem).select_by_visible_text("Hartford Fire Insurance Company")
 
     submitted_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "submitted"))
