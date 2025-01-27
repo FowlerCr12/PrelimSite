@@ -98,11 +98,11 @@ def layout(cid=None, **other_kwargs):
         "claim-assigned-date": "Claim_Assigned_Date",
         "claim-contact-date": "Claim_Contact_Date",
         "claim-inspection-date": "Claim_Inspection_Date",
-        # Add RCV loss field mappings with correct database field names
-        "dwelling-unit-rcv-loss": "DwellingUnit_RCV_Loss",
-        "detached-garage-rcv-loss": "DetachedGarage_RCV_Loss",
-        "improvements-rcv-loss": "Improvements_RCV_Loss",
-        "contents-rcv-loss": "Contents_RCV_Loss",
+        # Add RCV loss field mappings
+        "dwelling-unit-rcv-loss": "DwellingUnit_Insured_Damage_RCV_Loss",
+        "detached-garage-rcv-loss": "DetachedGarage_Insured_Damage_RCV_Loss",
+        "improvements-rcv-loss": "Improvements_Insured_Damage_RCV_Loss",
+        "contents-rcv-loss": "Contents_Insured_Damage_RCV_Loss",
         # Add more mappings as needed
     }
 
@@ -156,10 +156,10 @@ def layout(cid=None, **other_kwargs):
             "claim-assigned-date": "Claim_Assigned_Date",
             "claim-contact-date": "Claim_Contact_Date",
             "claim-inspection-date": "Claim_Inspection_Date",
-            "dwelling-unit-rcv-loss": "DwellingUnit_RCV_Loss",
-            "detached-garage-rcv-loss": "DetachedGarage_RCV_Loss",
-            "improvements-rcv-loss": "Improvements_RCV_Loss",
-            "contents-rcv-loss": "Contents_RCV_Loss",
+            "dwelling-unit-rcv-loss": "DwellingUnit_Insured_Damage_RCV_Loss",
+            "detached-garage-rcv-loss": "DetachedGarage_Insured_Damage_RCV_Loss",
+            "improvements-rcv-loss": "Improvements_Insured_Damage_RCV_Loss",
+            "contents-rcv-loss": "Contents_Insured_Damage_RCV_Loss",
         }
         
         # Common styles for all states
@@ -448,14 +448,14 @@ def layout(cid=None, **other_kwargs):
                             dmc.TextInput(
                                 label="Dwelling Unit RCV Loss",
                                 id="dwelling-unit-rcv-loss",
-                                value=claim_data.get("DwellingUnit_RCV_Loss", ""),
+                                value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("dwelling-unit-rcv-loss")
                             ),
                             dmc.TextInput(
                                 label="Detached Garage RCV Loss",
                                 id="detached-garage-rcv-loss",
-                                value=claim_data.get("DetachedGarage_RCV_Loss", ""),
+                                value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("detached-garage-rcv-loss")
                             ),
@@ -511,14 +511,14 @@ def layout(cid=None, **other_kwargs):
                             dmc.TextInput(
                                 label="Contents RCV Loss",
                                 id="contents-rcv-loss",
-                                value=claim_data.get("Contents_RCV_Loss", ""),
+                                value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("contents-rcv-loss")
                             ),
                             dmc.TextInput(
                                 label="Improvements RCV Loss",
                                 id="improvements-rcv-loss",
-                                value=claim_data.get("Improvements_RCV_Loss", ""),
+                                value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
                                 placeholder="Enter RCV Loss amount",
                                 style=get_style("improvements-rcv-loss")
                             ),
