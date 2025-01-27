@@ -37,12 +37,9 @@ def modify_columns():
     )
     cursor = conn.cursor()
 
-    # Modify columns to VARCHAR(255)
+    # Modify columns to VARCHAR(255) and add confidence_json column
     alter_statements = [
-        "ALTER TABLE claims MODIFY COLUMN DetachedGarage_Insured_Damage_RCV_Loss VARCHAR(255)",
-        "ALTER TABLE claims MODIFY COLUMN DwellingUnit_Insured_Damage_RCV_Loss VARCHAR(255)",
-        "ALTER TABLE claims MODIFY COLUMN Improvements_Insured_Damage_RCV_Loss VARCHAR(255)",
-        "ALTER TABLE claims MODIFY COLUMN Contents_Insured_Damage_RCV_Loss VARCHAR(255)"
+        "ALTER TABLE claims ADD COLUMN confidence_json JSON"
     ]
 
     try:
