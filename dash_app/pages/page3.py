@@ -119,14 +119,24 @@ def layout():
                     dmc.Stack([
                         dmc.Text("Recent Activity", size="lg", fw=500),
                         dmc.Table(
-                            headers=["Claim #", "Policyholder", "Status"],
-                            records=[
-                                {
-                                    "Claim #": row['claim_number'],
-                                    "Policyholder": row['Policyholder'],
-                                    "Status": row['Review_Status']
-                                }
-                                for _, row in df.sort_values('created_at', ascending=False).head(5).iterrows()
+                            withBorder=True,
+                            highlightOnHover=True,
+                            striped=True,
+                            children=[
+                                html.Thead(
+                                    html.Tr([
+                                        html.Th("Claim #"),
+                                        html.Th("Policyholder"),
+                                        html.Th("Status")
+                                    ])
+                                ),
+                                html.Tbody([
+                                    html.Tr([
+                                        html.Td(row['claim_number']),
+                                        html.Td(row['Policyholder']),
+                                        html.Td(row['Review_Status'])
+                                    ]) for _, row in df.sort_values('created_at', ascending=False).head(5).iterrows()
+                                ])
                             ]
                         )
                     ])
