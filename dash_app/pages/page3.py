@@ -36,7 +36,10 @@ def get_claims_data():
     cursor.close()
     conn.close()
     
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    # Convert created_at to datetime
+    df['created_at'] = pd.to_datetime(df['created_at'])
+    return df
 
 def layout():
     df = get_claims_data()
@@ -55,10 +58,12 @@ def layout():
     )
 
     # Create claims over time line chart
-    claims_over_time = df.groupby(df['created_at'].dt.date).size()
+    claims_over_time = df.groupby(df['created_at'].dt.date).size().reset_index()
+    claims_over_time.columns = ['date', 'count']  # Name the columns
     timeline_fig = px.line(
-        x=claims_over_time.index,
-        y=claims_over_time.values,
+        claims_over_time,
+        x='date',
+        y='count',
         title='Claims Over Time'
     )
 
@@ -80,23 +85,23 @@ def layout():
             spacing="lg",
             children=[
                 dmc.Card([
-                    dmc.Text("Total Claims", size="lg", weight=500),
-                    dmc.Text(str(total_claims), size="xl", weight=700)
+                    dmc.Text("Total Claims", size="lg", fw=500),
+                    dmc.Text(str(total_claims), size="xl", fw=700)
                 ]),
                 dmc.Card([
-                    dmc.Text("Claims This Month", size="lg", weight=500),
-                    dmc.Text(str(claims_this_month), size="xl", weight=700)
+                    dmc.Text("Claims This Month", size="lg", fw=500),
+                    dmc.Text(str(claims_this_month), size="xl", fw=700)
                 ]),
                 dmc.Card([
-                    dmc.Text("Avg Building Coverage", size="lg", weight=500),
-                    dmc.Text(f"${avg_building_coverage:,.2f}", size="xl", weight=700)
+                    dmc.Text("Avg Building Coverage", size="lg", fw=500),
+                    dmc.Text(f"${avg_building_coverage:,.2f}", size="xl", fw=700)
                 ]),
                 dmc.Card([
-                    dmc.Text("Review Completion", size="lg", weight=500),
+                    dmc.Text("Review Completion", size="lg", fw=500),
                     dmc.Text(
                         f"{(len(df[df['Review_Status'] == 'Reviewed']) / total_claims * 100):.1f}%",
                         size="xl",
-                        weight=700
+                        fw=700
                     )
                 ]),
             ]
@@ -112,7 +117,7 @@ def layout():
                 dmc.Card(dcc.Graph(figure=insurer_fig)),
                 dmc.Card(
                     dmc.Stack([
-                        dmc.Text("Recent Activity", size="lg", weight=500),
+                        dmc.Text("Recent Activity", size="lg", fw=500),
                         dmc.Table(
                             headers=["Claim #", "Policyholder", "Status"],
                             records=[
