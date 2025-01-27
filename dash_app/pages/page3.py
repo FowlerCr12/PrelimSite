@@ -57,10 +57,6 @@ def layout():
         title='Claims by Review Status'
     )
 
-    dmc.PieChart(
-        data=status_dist.values,
-        strokeWidth=1
-    )
 
     # Create claims over time line chart
     claims_over_time = df.groupby(df['created_at'].dt.date).size().reset_index()
