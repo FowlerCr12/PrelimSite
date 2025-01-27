@@ -141,6 +141,15 @@ def layout(cid=None, **other_kwargs):
             "claim-inspection-date": "Claim_Inspection_Date"
         }
         
+        # Common styles for all states
+        base_style.update({
+            "borderRadius": "8px",
+            "borderWidth": "1px",
+            "borderStyle": "solid",
+            "transition": "all 0.2s ease-in-out",  # Smooth transition for hover effects
+            "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"  # Subtle shadow
+        })
+        
         # Get the correct database column name
         db_field = field_mapping.get(field_id, field_id)
         value = claim_data.get(db_field)  # Get the field value
@@ -153,20 +162,36 @@ def layout(cid=None, **other_kwargs):
         
         confidence = get_confidence(field_id)
         
-        print(f"DEBUG: Style for {field_id} (DB field: {db_field}) - value: {value} - confidence: {confidence}")
-        
         if not value:  # Check if field is blank or only whitespace
             print(f"DEBUG: Applying yellow style to {field_id} (blank field)")
-            base_style["backgroundColor"] = "#fff3e0"  # Light yellow
-            base_style["borderColor"] = "#ffa726"      # Orange/yellow
+            base_style.update({
+                "backgroundColor": "#fff8e1",  # Softer yellow
+                "borderColor": "#ffd54f",      # Warmer yellow
+                "&:hover": {
+                    "borderColor": "#ffb300",  # Darker yellow on hover
+                    "boxShadow": "0 2px 4px rgba(255,179,0,0.15)"
+                }
+            })
         elif confidence < 0.96:
             print(f"DEBUG: Applying red style to {field_id}")
-            base_style["backgroundColor"] = "#ffebee"  # Light red
-            base_style["borderColor"] = "#ef5350"      # Red
+            base_style.update({
+                "backgroundColor": "#ffebee",  # Softer red
+                "borderColor": "#ef9a9a",      # Lighter red
+                "&:hover": {
+                    "borderColor": "#ef5350",  # Darker red on hover
+                    "boxShadow": "0 2px 4px rgba(239,83,80,0.15)"
+                }
+            })
         else:
             print(f"DEBUG: Applying green style to {field_id}")
-            base_style["backgroundColor"] = "#e8f5e9"  # Light green
-            base_style["borderColor"] = "#66bb6a"      # Green
+            base_style.update({
+                "backgroundColor": "#f1f8e9",  # Softer green
+                "borderColor": "#aed581",      # Lighter green
+                "&:hover": {
+                    "borderColor": "#7cb342",  # Darker green on hover
+                    "boxShadow": "0 2px 4px rgba(124,179,66,0.15)"
+                }
+            })
             
         return base_style
 
