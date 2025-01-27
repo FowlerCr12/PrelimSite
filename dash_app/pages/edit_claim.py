@@ -356,7 +356,7 @@ def layout(cid=None, **other_kwargs):
             dmc.Grid(
                 [
                     # Column 1: Coverage and Deductible
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Coverage A",
@@ -375,7 +375,7 @@ def layout(cid=None, **other_kwargs):
                         span=4,
                     ),
                     # Column 2: RCV Loss Values
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Dwelling Unit RCV Loss",
@@ -402,7 +402,7 @@ def layout(cid=None, **other_kwargs):
                         span=4,
                     ),
                     # Column 3: Reserve and Advance
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Coverage A Reserve",
@@ -428,7 +428,7 @@ def layout(cid=None, **other_kwargs):
             dmc.Grid(
                 [
                     # Column 1: Coverage and Deductible
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Coverage B",
@@ -447,7 +447,7 @@ def layout(cid=None, **other_kwargs):
                         span=4,
                     ),
                     # Column 2: RCV Loss Value
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Contents RCV Loss",
@@ -460,7 +460,7 @@ def layout(cid=None, **other_kwargs):
                         span=4,
                     ),
                     # Column 3: Reserve and Advance
-                    dmc.Col(
+                    dmc.Grid.Col(
                         [
                             dmc.TextInput(
                                 label="Coverage B Reserve",
