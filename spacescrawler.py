@@ -17,13 +17,15 @@ from dotenv import load_dotenv
 ###########################################
 # CONFIGURATION
 ###########################################
+# Load environment variables first
+load_dotenv()
+
 # DigitalOcean Spaces
 SPACES_KEY = os.getenv('SPACES_KEY')     # <-- removed the trailing comma
 SPACES_SECRET = os.getenv('SPACES_SECRET')
 SPACES_ENDPOINT = "nyc3.digitaloceanspaces.com"
 SPACES_BUCKET = "prelim-program-file-storage"
 SPACES_REGION = "nyc3"
-load_dotenv()
 
 # Website login
 USERNAME = "craigfowler"
