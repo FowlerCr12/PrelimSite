@@ -320,7 +320,8 @@ def store_claim_in_mysql(replacements, claim_number, confidence_data):
             DetachedGarage_Insured_Damage_RCV_Loss = %s,
             Improvements_Insured_Damage_RCV_Loss = %s,
             Contents_Insured_Damage_RCV_Loss = %s,
-            Review_Status = 'In Review'
+            Review_Status = 'In Review',
+            ai_generation_date_time = NOW()
         WHERE claim_number = %s
         """
 

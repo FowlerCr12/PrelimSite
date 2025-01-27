@@ -39,7 +39,7 @@ def modify_columns():
 
     # Modify columns to VARCHAR(255) and add confidence_json column
     alter_statements = [
-        "ALTER TABLE claims ADD COLUMN confidence_json JSON"
+        "ALTER TABLE claims ADD COLUMN ai_generation_date_time DATETIME"
     ]
 
     try:
