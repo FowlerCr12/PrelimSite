@@ -210,7 +210,7 @@ def layout(cid=None, **other_kwargs):
                     "backgroundColor": "transparent"  # Ensure input background is transparent
                 }
             })
-        elif confidence < 0.99:
+        elif confidence < 0.98:
             base_style.update({
                 "backgroundColor": "#ffebee",
                 "borderColor": "#ef9a9a",
