@@ -122,6 +122,7 @@ def layout():
                             withBorder=True,
                             highlightOnHover=True,
                             striped=True,
+                            withColumnBorders=True,
                             children=[
                                 html.Thead(
                                     html.Tr([
