@@ -72,7 +72,7 @@ def layout():
     insurer_fig = px.bar(
         x=insurer_dist.index,
         y=insurer_dist.values,
-        title='Claims by Insurer'
+        title='ProcessedClaims by Insurer'
     )
 
     return dmc.Stack([
