@@ -108,13 +108,25 @@ def layout(cid=None, **other_kwargs):
     def get_confidence(field_id):
         # Get the corresponding JSON type for this field
         json_type = field_type_mapping.get(field_id)
+        print(f"\nDEBUG get_confidence:")
+        print(f"Field ID: {field_id}")
+        print(f"Mapped JSON type: {json_type}")
+        
         if not json_type:
+            print(f"No mapping found for field_id '{field_id}', returning default 0.90")
             return .90  # Default confidence if no mapping exists
         
         if json_data and 'entities' in json_data:
+            print(f"Searching through {len(json_data['entities'])} entities")
             for entity in json_data['entities']:
+                print(f"  Checking entity: type={entity.get('type')}, confidence={entity.get('confidence')}")
                 if entity.get('type') == json_type:
-                    return entity.get('confidence', 1.0)
+                    confidence = entity.get('confidence', 1.0)
+                    print(f"  ✓ Match found! Returning confidence: {confidence}")
+                    return confidence
+            print(f"No matching entity found for type '{json_type}', returning 1.0")
+        else:
+            print("No json_data or 'entities' not in json_data, returning 1.0")
         return 1.0
 
     def get_style(field_id, base_style=None):
