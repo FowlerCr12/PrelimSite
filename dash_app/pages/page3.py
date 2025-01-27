@@ -119,7 +119,7 @@ def layout():
                     dmc.Stack([
                         dmc.Text("Recent Activity", size="lg", fw=500),
                         dmc.Table(
-                            withBorder=True,
+                            withTableBorder=True,
                             highlightOnHover=True,
                             striped=True,
                             withColumnBorders=True,
