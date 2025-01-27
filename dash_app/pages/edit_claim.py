@@ -98,37 +98,20 @@ def layout(cid=None, **other_kwargs):
         "claim-assigned-date": "Claim_Assigned_Date",
         "claim-contact-date": "Claim_Contact_Date",
         "claim-inspection-date": "Claim_Inspection_Date",
-        # Add RCV loss field mappings
-        "dwelling-unit-rcv-loss": "DwellingUnit_Insured_Damage_RCV_Loss",
-        "detached-garage-rcv-loss": "DetachedGarage_Insured_Damage_RCV_Loss",
-        "improvements-rcv-loss": "Improvements_Insured_Damage_RCV_Loss",
-        "contents-rcv-loss": "Contents_Insured_Damage_RCV_Loss",
         # Add more mappings as needed
     }
 
     def get_confidence(field_id):
         # Get the corresponding JSON type for this field
         json_type = field_type_mapping.get(field_id)
-        print(f"\nChecking confidence for field: {field_id}")
-        print(f"JSON type mapping: {json_type}")
-        
         if not json_type:
-            print(f"No mapping found for {field_id}, returning default 0.9")
-            return 0.9  # Default confidence if no mapping exists
+            return .90  # Default confidence if no mapping exists
         
         if json_data and 'entities' in json_data:
-            print(f"Found JSON data with entities")
             for entity in json_data['entities']:
-                print(f"Checking entity: {entity}")
                 if entity.get('type') == json_type:
-                    confidence = entity.get('confidence', 0.9)
-                    print(f"Found matching entity with confidence: {confidence}")
-                    return confidence
-            print(f"No matching entity found for {json_type}")
-        else:
-            print("No JSON data or entities found")
-        print("Returning default confidence 0.9")
-        return 0.9  # Default to low confidence if not found
+                    return entity.get('confidence', 1.0)
+        return 1.0
 
     def get_style(field_id, base_style=None):
         base_style = base_style or {}
@@ -155,11 +138,7 @@ def layout(cid=None, **other_kwargs):
             "loss-address": "Loss_Address",
             "claim-assigned-date": "Claim_Assigned_Date",
             "claim-contact-date": "Claim_Contact_Date",
-            "claim-inspection-date": "Claim_Inspection_Date",
-            "dwelling-unit-rcv-loss": "DwellingUnit_Insured_Damage_RCV_Loss",
-            "detached-garage-rcv-loss": "DetachedGarage_Insured_Damage_RCV_Loss",
-            "improvements-rcv-loss": "Improvements_Insured_Damage_RCV_Loss",
-            "contents-rcv-loss": "Contents_Insured_Damage_RCV_Loss",
+            "claim-inspection-date": "Claim_Inspection_Date"
         }
         
         # Common styles for all states
@@ -204,7 +183,7 @@ def layout(cid=None, **other_kwargs):
                     "backgroundColor": "transparent"  # Ensure input background is transparent
                 }
             })
-        elif confidence < 0.96:  # Changed from 0.96 to 0.998
+        elif confidence < 0.96:
             base_style.update({
                 "backgroundColor": "#ffebee",
                 "borderColor": "#ef9a9a",
@@ -818,10 +797,10 @@ def save_claim(
             Next_Steps_Paragraph = %s,
             Final_Report_Paragraph = %s,
             Claim_Summary_Par = %s,
-            DwellingUnit_RCV_Loss = %s,
-            DetachedGarage_RCV_Loss = %s,
-            Improvements_RCV_Loss = %s,
-            Contents_RCV_Loss = %s,
+            DwellingUnit_Insured_Damage_RCV_Loss = %s,
+            DetachedGarage_Insured_Damage_RCV_Loss = %s,
+            Improvements_Insured_Damage_RCV_Loss = %s,
+            Contents_Insured_Damage_RCV_Loss = %s,
             Review_Status = %s
         WHERE id = %s
         """
