@@ -710,17 +710,28 @@ def process_claim_pair(pdf_path, txt_path, claim_number):
     print("[DEBUG] Created final docx:", output_docx_path)
     return output_docx_path
 
+
 def extract_confidence_values(docai_data):
     """
     Extract confidence values from Document AI output into a simplified format.
+    
+    - Sets confidence to 0 if the mentionText is "NO_ADJUSTER" or "NO_INSURER".
+    - Changes mentionText from "$" to "$0" if that's the sole content.
     """
     confidence_data = {"entities": []}
     
     for entity in docai_data.get("entities", []):
+        mention_text = entity.get("mentionText", "")
+        confidence = entity.get("confidence", 1.0)
+        
+        # 1) If mentionText is NO_ADJUSTER or NO_INSURER, override confidence to 0
+        if mention_text in ("NO_ADJUSTER", "NO_INSURER"):
+            confidence = 0
+        
         confidence_data["entities"].append({
             "type": entity.get("type", ""),
-            "confidence": entity.get("confidence", 1.0),
-            "mentionText": entity.get("mentionText", "")
+            "confidence": confidence,
+            "mentionText": mention_text
         })
     
     return confidence_data
