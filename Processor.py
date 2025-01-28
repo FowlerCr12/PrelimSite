@@ -727,6 +727,7 @@ def extract_confidence_values(docai_data):
             "confidence": confidence,
             "mentionText": mention_text
         })
+        print(confidence_data)
     
     return confidence_data
 
