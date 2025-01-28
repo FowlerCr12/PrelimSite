@@ -7,7 +7,7 @@ DATABASE = "defaultdb"
 TABLE_NAME = "claims"  # <-- change to your table name
 PORT = 25060            # If needed, set your custom port here
 
-def modify_columns():
+def check_final_report_paragraph():
     conn = mysql.connector.connect(
         host=HOST,
         port=PORT,
@@ -16,25 +16,42 @@ def modify_columns():
         database=DATABASE
     )
     cursor = conn.cursor()
-
-    # Modify columns to VARCHAR(255) and add confidence_json column
-    alter_statements = [
-        "ALTER TABLE claims ADD COLUMN ai_generation_date_time DATETIME"
-    ]
+    
+    # Query to select rows containing "No Final Report at this time."
+    query = f"""
+        SELECT id, Final_Report_Paragraph
+        FROM {TABLE_NAME}
+        WHERE Final_Report_Paragraph LIKE '%No Final Report at this time.%'
+    """
 
     try:
-        for statement in alter_statements:
-            try:
-                cursor.execute(statement)
-                conn.commit()
-                print(f"Successfully executed: {statement}")
-            except mysql.connector.Error as err:
-                print(f"Error executing {statement}: {err}")
-    except Exception as e:
-        print(f"[ERROR] {e}")
+        cursor.execute(query)
+        results = cursor.fetchall()
+        
+        matching_rows = []
+        for row in results:
+            row_id = row[0]
+            paragraph = row[1]
+            
+            # Check if there is text BEFORE "No Final Report at this time."
+            phrase = "No Final Report at this time."
+            index_of_phrase = paragraph.find(phrase)
+            
+            # If the phrase is found and not at the very beginning (index 0),
+            # that means there's text before the phrase.
+            if index_of_phrase > 0:
+                matching_rows.append((row_id, paragraph))
+
+        # Print out the matching rows
+        print("Rows that contain 'No Final Report at this time.' WITH text before it:")
+        for r in matching_rows:
+            print(f"ID: {r[0]}, Final_Report_Paragraph: {r[1]}")
+
+    except mysql.connector.Error as err:
+        print(f"[ERROR] {err}")
     finally:
         cursor.close()
         conn.close()
 
 if __name__ == "__main__":
-    modify_columns()
+    check_final_report_paragraph()
