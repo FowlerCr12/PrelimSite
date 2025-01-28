@@ -241,13 +241,16 @@ def store_claim_in_mysql(replacements, claim_number, confidence_data):
         # More robust cleaning of values
         def clean_currency(value):
             try:
+                # Check for specific cases and return $0 if matched
+                if value in ["$", "0", "0.00", ""]:
+                    return "$0"
                 # Remove all non-numeric characters except decimal point
                 cleaned = ''.join(c for c in str(value) if c.isdigit() or c == '.')
                 print(f"Cleaned value: {cleaned} from original: {value}")
-                return float(cleaned or "0")
+                return f"${cleaned or '0'}"  # Ensure it returns as a dollar amount
             except (ValueError, TypeError):
                 print(f"Error converting value: {value}")
-                return 0.0
+                return "$0"  # Default to $0 on error
         
         building_value = clean_currency(coverage_building)
         contents_value = clean_currency(coverage_contents)
@@ -255,14 +258,14 @@ def store_claim_in_mysql(replacements, claim_number, confidence_data):
         print(f"Final building value: {building_value}")
         print(f"Final contents value: {contents_value}")
         
-        if building_value == 0 and contents_value > 0:
+        if building_value == "$0" and contents_value > "$0":
             claim_type = "Contents Only"
-        elif building_value > 0 and contents_value == 0:
+        elif building_value > "$0" and contents_value == "$0":
             claim_type = "Building Only"
-        elif building_value > 0 and contents_value > 0:
+        elif building_value > "$0" and contents_value > "$0":
             claim_type = "Building and Contents"
         else:
-            claim_type = "Unknown"  # Default case if both are 0
+            claim_type = "Unknown"  # Default case if both are $0
             
         print(f"Determined claim type: {claim_type}")
         replacements["claim_type"] = claim_type
@@ -494,6 +497,11 @@ def call_openai_for_json(input_text, custom_prompt):
             temperature=0.1
         )
         ai_raw_text = response.choices[0].message.content.strip()
+        
+        # Clean up the response if it ends with "No final report at this time."
+        if ai_raw_text.endswith("No Final Report at this time."):
+            ai_raw_text = ai_raw_text[:-len("No Final Report at this time.")].strip()
+        
         data = json.loads(ai_raw_text)
         return data
     except json.JSONDecodeError as e:
