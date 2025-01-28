@@ -7,7 +7,7 @@ DATABASE = "defaultdb"
 TABLE_NAME = "claims"  # <-- change to your table name
 PORT = 25060            # If needed, set your custom port here
 
-def check_final_report_paragraph():
+def remove_no_final_report_text():
     conn = mysql.connector.connect(
         host=HOST,
         port=PORT,
@@ -16,36 +16,46 @@ def check_final_report_paragraph():
         database=DATABASE
     )
     cursor = conn.cursor()
-    
-    # Query to select rows containing "No Final Report at this time."
-    query = f"""
+
+    # Step 1: Select rows where Final_Report_Paragraph contains the target phrase
+    phrase = "No Final Report at this time."
+    select_query = f"""
         SELECT id, Final_Report_Paragraph
         FROM {TABLE_NAME}
-        WHERE Final_Report_Paragraph LIKE '%No Final Report at this time.%'
+        WHERE Final_Report_Paragraph LIKE %s
     """
 
     try:
-        cursor.execute(query)
-        results = cursor.fetchall()
-        
-        matching_rows = []
-        for row in results:
-            row_id = row[0]
-            paragraph = row[1]
-            
-            # Check if there is text BEFORE "No Final Report at this time."
-            phrase = "No Final Report at this time."
-            index_of_phrase = paragraph.find(phrase)
-            
-            # If the phrase is found and not at the very beginning (index 0),
-            # that means there's text before the phrase.
-            if index_of_phrase > 0:
-                matching_rows.append((row_id, paragraph))
+        cursor.execute(select_query, (f"%{phrase}%",))
+        rows = cursor.fetchall()
 
-        # Print out the matching rows
-        print("Rows that contain 'No Final Report at this time.' WITH text before it:")
-        for r in matching_rows:
-            print(f"ID: {r[0]}, Final_Report_Paragraph: {r[1]}")
+        for row in rows:
+            row_id = row[0]
+            paragraph = row[1] or ""  # In case it's NULL, convert to empty string
+
+            # Step 2: Check if the phrase occurs, and there's text before it
+            index_of_phrase = paragraph.find(phrase)
+            if index_of_phrase > 0:
+                # Step 3: Remove just that substring from the paragraph
+                new_paragraph = (
+                    paragraph[:index_of_phrase] +
+                    paragraph[index_of_phrase + len(phrase):]
+                )
+
+                # Optional: You may want to strip excess whitespace 
+                new_paragraph = new_paragraph.strip()
+
+                # Update the row in the database
+                update_query = f"""
+                    UPDATE {TABLE_NAME}
+                    SET Final_Report_Paragraph = %s
+                    WHERE id = %s
+                """
+                cursor.execute(update_query, (new_paragraph, row_id))
+                print(f"Updated ID={row_id}:\n  Old: {paragraph}\n  New: {new_paragraph}\n")
+
+        # Commit all updates
+        conn.commit()
 
     except mysql.connector.Error as err:
         print(f"[ERROR] {err}")
@@ -54,4 +64,4 @@ def check_final_report_paragraph():
         conn.close()
 
 if __name__ == "__main__":
-    check_final_report_paragraph()
+    remove_no_final_report_text()
