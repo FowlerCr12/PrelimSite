@@ -252,17 +252,23 @@ def store_claim_in_mysql(replacements, claim_number, confidence_data):
                 print(f"Error converting value: {value}")
                 return "$0"  # Default to $0 on error
         
+        # Clean Coverage A and B values
         building_value = clean_currency(coverage_building)
         contents_value = clean_currency(coverage_contents)
-        
+
+
         print(f"Final building value: {building_value}")
         print(f"Final contents value: {contents_value}")
-        
-        if building_value == "$0" and contents_value > "$0":
+
+        # Convert cleaned values to float for comparison
+        building_value_num = float(building_value.replace('$', '').replace(',', ''))
+        contents_value_num = float(contents_value.replace('$', '').replace(',', ''))
+
+        if building_value_num == 0 and contents_value_num > 0:
             claim_type = "Contents Only"
-        elif building_value > "$0" and contents_value == "$0":
+        elif building_value_num > 0 and contents_value_num == 0:
             claim_type = "Building Only"
-        elif building_value > "$0" and contents_value > "$0":
+        elif building_value_num > 0 and contents_value_num > 0:
             claim_type = "Building and Contents"
         else:
             claim_type = "Unknown"  # Default case if both are $0
@@ -278,12 +284,28 @@ def store_claim_in_mysql(replacements, claim_number, confidence_data):
             if value in ["", "$", "$0", "$0.00", "0", "0.00"]:
                 return "N/A"
             return value
-
+        
+        def clean_coverages(value):
+            """Helper function to clean coverages"""
+            if not value:
+                return "$0"
+            value = str(value).strip()
+            if value in ["", "$", "$0", "$0.00", "0", "0.00"]:
+                return "$0"
+            return value
+        
         # Extract and clean RCV Loss values
         DwellingUnit_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DwellingUnit_Insured_Damage_RCV_Loss"))
         DetachedGarage_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("DetachedGarage_Insured_Damage_RCV_Loss"))
         Improvements_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Improvements_Insured_Damage_RCV_Loss"))
         Contents_Insured_Damage_RCV_Loss = clean_rcv_value(replacements.get("Contents_Insured_Damage_RCV_Loss"))
+        
+        Coverage_A_Advance = clean_coverages(replacements.get("Coverage-A-Building_Advance"))
+        Coverage_B_Advance = clean_coverages(replacements.get("Coverage-B-Contents_Advance"))
+        Coverage_A_Deductible = clean_coverages(replacements.get("Coverage-A_Building_Deductible"))
+        Coverage_B_Deductible = clean_coverages(replacements.get("Coverage-B_Contents_Deductible"))
+        Coverage_A_Reserve = clean_coverages(replacements.get("Coverage-A-Building_Reserve"))
+        Coverage_B_Reserve = clean_coverages(replacements.get("Coverage-B-Contents_Reserve"))
 
         update_sql = """
         UPDATE claims SET
