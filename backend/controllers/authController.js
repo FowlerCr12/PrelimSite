@@ -1,4 +1,4 @@
-// controllers/authController.js
+// backend/controllers/authController.js
 const bcrypt = require('bcrypt');
 const nJwt = require('njwt');
 const secureRandom = require('secure-random');
