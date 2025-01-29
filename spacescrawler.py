@@ -29,7 +29,7 @@ SPACES_REGION = "nyc3"
 
 # Website login
 USERNAME = "craigfowler"
-PASSWORD = r"Skipper6816&&&"
+PASSWORD = r"Skipper6816!!!"
 
 # Local folders
 NOTES_FOLDER = "downloads/notes"
