@@ -82,6 +82,17 @@ header = dmc.AppShellHeader(
         [
             dmc.Burger(id="burger", size="sm", hiddenFrom="sm", opened=False),
             dmc.Title("Status Report Program", c="blue"),
+            dmc.Alert(
+                "Status Report Program will be down from 5:30pm CST to 7:00pm for maintenance.",
+                title="ALERT!",
+                color="violet",
+                withCloseButton=True,
+                id="main-alert",
+                mb="md",
+                duration=10000,  # how long before button auto closes
+                icon=get_icon("tabler:alert-triangle"),
+                style={"width": "50%", "margin": "auto", "height": "15%", "position": "fixed", "zIndex": "1000", "top": "0", "right": "0"},
+            ),
         ],
         h="100%",
         px="md",
@@ -92,7 +103,9 @@ layout = dmc.AppShell(
     children=[
         header,
         navbar,
-        dmc.AppShellMain(page_container),  # dash.page_container if use_pages=True
+        dmc.AppShellMain([
+            page_container,  # dash.page_container if use_pages=True
+        ]),
     ],
     header={"height": 60},
     padding="md",
@@ -118,13 +131,12 @@ def navbar_is_open(opened, navbar):
     return navbar
 
 # =============== 4) FLASK ROUTE ON THE UNDERLYING "server" ===============
+# Example of a Flask route if needed:
 @server.route("/api/claim/<claim_number>", methods=["GET"])
 def get_claim(claim_number):
     conn = get_db_connection()
     if not conn:
-        # Just an example "fake" response if no real DB
         return jsonify({"error": "No DB connection stubbed"}), 500
-
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT extracted_json FROM claims WHERE claim_number=%s", (claim_number,))
@@ -134,7 +146,6 @@ def get_claim(claim_number):
         return jsonify({"extracted_json": json.loads(row["extracted_json"])}), 200
     finally:
         conn.close()
-
 
 # =============== 5) RUN THE DASH SERVER ===============
 if __name__ == "__main__":
