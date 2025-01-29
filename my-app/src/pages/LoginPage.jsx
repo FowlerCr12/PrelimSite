@@ -56,7 +56,7 @@ function LoginPage() {
         setErrorMessage(''); // clear previous errors
         try {
             // Make an axios request to your backend
-            const response = await axios.post('http://localhost:5000/auth/login', {
+            const response = await axios.post('http://159.223.146.87/auth/login', {
                 email: values.email,
                 password: values.password,
             });
