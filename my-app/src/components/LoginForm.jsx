@@ -1,6 +1,6 @@
 // src/components/LoginForm.jsx
 import React, { useState } from 'react';
-import { TextInput, PasswordInput, Button, Group, Text } from '@mantine/core';
+import { TextInput, PasswordInput, Button, Group, Text, Container, Title } from '@mantine/core';
 import axios from 'axios';
 
 function LoginForm() {
@@ -22,7 +22,7 @@ function LoginForm() {
             // On success, store the token (e.g., localStorage or other method)
             localStorage.setItem('token', response.data.token);
 
-            // For demonstration, we’ll just alert success
+            // For demonstration, we'll just alert success
             alert('Login successful!');
             // You might redirect the user to a dashboard, etc.
         } catch (err) {
@@ -31,38 +31,53 @@ function LoginForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            {/* Email Field */}
-            <TextInput
-                label="Email"
-                placeholder="name@example.com"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.currentTarget.value)}
-            />
+        <Container size="xs" padding="md">
+            <Title order={2} align="center" mb="lg">Login</Title>
+            <form onSubmit={handleSubmit}>
+                {/* Email Field */}
+                <TextInput
+                    label="Email"
+                    placeholder="user@example.com"
+                    required
+                    value={email}
+                    onChange={(event) => setEmail(event.currentTarget.value)}
+                    mb="md"
+                    styles={{
+                        input: {
+                            border: '1px solid #ccc',
+                            borderRadius: '8px',
+                            '&:focus': {
+                                borderColor: '#007bff',
+                                boxShadow: '0 0 0 1px rgba(0, 123, 255, 0.5)',
+                            },
+                        },
+                    }}
+                />
 
-            {/* Password Field */}
-            <PasswordInput
-                label="Password"
-                placeholder="Your password"
-                required
-                mt="md"
-                value={password}
-                onChange={(event) => setPassword(event.currentTarget.value)}
-            />
+                {/* Password Field */}
+                <PasswordInput
+                    label="Password"
+                    placeholder="Your password"
+                    required
+                    mt="md"
+                    value={password}
+                    onChange={(event) => setPassword(event.currentTarget.value)}
+                    mb="md"
+                />
 
-            {/* Error Message */}
-            {error && (
-                <Text color="red" size="sm" mt="sm">
-                    {error}
-                </Text>
-            )}
+                {/* Error Message */}
+                {error && (
+                    <Alert variant="light" color="red" title="Could not sign in" icon={<IconAlertCircle size={16} />}>
+                        {error}
+                    </Alert>
+                )}
 
-            {/* Submit Button */}
-            <Group position="right" mt="md">
-                <Button type="submit">Login</Button>
-            </Group>
-        </form>
+                {/* Submit Button */}
+                <Group position="right" mt="md">
+                    <Button type="submit">Login</Button>
+                </Group>
+            </form>
+        </Container>
     );
 }
 
