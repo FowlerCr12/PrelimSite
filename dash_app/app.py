@@ -84,17 +84,6 @@ header = dmc.AppShellHeader(
         [
             dmc.Burger(id="burger", size="sm", hiddenFrom="sm", opened=False),
             dmc.Title("Status Report Program", c="blue"),
-            dmc.Alert(
-                "Status Report Program will be down from 5:30pm CST to 7:00pm for maintenance.",
-                title="ALERT!",
-                color="violet",
-                withCloseButton=True,
-                id="main-alert",
-                mb="md",
-                duration=10000,  # how long before button auto closes
-                icon=get_icon("tabler:alert-triangle"),
-                style={"width": "50%", "margin": "auto", "height": "15%", "position": "fixed", "zIndex": "1000", "top": "0", "right": "0"},
-            ),
         ],
         h="100%",
         px="md",
