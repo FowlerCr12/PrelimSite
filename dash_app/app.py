@@ -52,9 +52,9 @@ navlinks_refresh = dmc.Stack(
             variant="subtle",
         ),
         dmc.NavLink(
-            label="Approved Files",
+            label="Register New User",
             leftSection=get_icon("tabler:gauge"),
-            href="/dash/page2",
+            href="/dash/registerUser",
             refresh=True,
             variant="subtle",
         ),
