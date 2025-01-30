@@ -26,7 +26,7 @@ def register_user(email, password, first_name, last_name):
         cursor = conn.cursor()
         
         sql = """
-        INSERT INTO users (email, password_hash)
+        INSERT INTO users (email, password_hash, first_name, last_name)
         VALUES (%s, %s, %s, %s)
         """
         cursor.execute(sql, (
@@ -40,11 +40,11 @@ def register_user(email, password, first_name, last_name):
         
     except pymysql.Error as e:
         print("Database error:", e)
-        return False, "Database error occurred"
+        return False, f"Database error occurred: {str(e)}"
     finally:
-        if cursor:
+        if 'cursor' in locals():
             cursor.close()
-        if conn:
+        if 'conn' in locals():
             conn.close()
 
 # Add new callback outputs for notifications
