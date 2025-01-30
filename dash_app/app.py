@@ -23,6 +23,7 @@ app = Dash(
     use_pages=True,      # If you want multi-page Dash
     external_stylesheets=dmc.styles.ALL,
     routes_pathname_prefix="/dash/",
+    requests_pathname_prefix="/dash/",
 )
 
 # Example function for DB connection (fake example!)
