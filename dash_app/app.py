@@ -22,6 +22,7 @@ app = Dash(
     server=server,       # <-- We attach the Flask server here
     use_pages=True,      # If you want multi-page Dash
     external_stylesheets=dmc.styles.ALL,
+    routes_pathname_prefix="/dash/",
 )
 
 # Example function for DB connection (fake example!)
