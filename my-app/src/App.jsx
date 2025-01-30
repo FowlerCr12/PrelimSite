@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
+import ForgotPassword from './pages/ForgotPassword';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* Protect the /home route */}
                 <Route

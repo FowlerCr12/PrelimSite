@@ -69,7 +69,7 @@ const useStyles = createStyles((theme) => ({
         },
         '&:hover': {
             borderColor: '#40739C',
-            boxShadow: '0 0 0 1px #40739C', 
+            boxShadow: '0 0 0 1px #40739C',
         },
         '&::placeholder': {
             padding: '5px',
@@ -81,7 +81,7 @@ const useStyles = createStyles((theme) => ({
     },
 }));
 
-function LoginPage() {
+function ForgotPassword() {
     const { classes } = useStyles();
     const navigate = useNavigate();
 
@@ -129,7 +129,7 @@ function LoginPage() {
         <Box className={classes.wrapper}>
             <Paper radius="md" withBorder className={classes.formContainer}>
                 <Title order={2} align="center" mb="s">
-                    Please login to continue.
+                    Enter email to reset password.
                 </Title>
 
                 {/* Mantine Form */}
@@ -146,30 +146,12 @@ function LoginPage() {
                         }}
                     />
 
-                    <PasswordInput 
-                        label="Password"
-                        placeholder="Your password"
-                        required
-                        mt="md"
-                        {...form.getInputProps('password')}
-                        classNames={{
-                            innerInput: classes.input,
-                            label: classes.label,
-                        }}
-                    />
-
                     {/* If there's an error, show it */}
                     {errorMessage && (
                         <Text color="red" size="sm" mt="sm">
                             {errorMessage}
                         </Text>
                     )}
-
-                    <Group position="apart" mt="md">
-                        <Text color="dimmed" size="sm">
-                            Forgot password?
-                        </Text>
-                    </Group>
 
                     <Group position="center" mt="xl">
                         <Button
@@ -180,7 +162,7 @@ function LoginPage() {
                                 root: classes.button,
                             }}
                         >
-                            Sign in
+                            Submit
                         </Button>
                     </Group>
                 </form>
@@ -189,4 +171,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default ForgotPassword;
