@@ -47,7 +47,7 @@ navlinks_refresh = dmc.Stack(
         dmc.NavLink(
             label="Need Review",
             leftSection=get_icon("tabler:gauge"),
-            href="/page1",
+            href="/dash/page1",
             refresh=False,
             variant="subtle",
         ),
