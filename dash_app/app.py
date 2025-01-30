@@ -54,14 +54,14 @@ navlinks_refresh = dmc.Stack(
         dmc.NavLink(
             label="Approved Files",
             leftSection=get_icon("tabler:gauge"),
-            href="/page2",
+            href="/dash/page2",
             refresh=True,
             variant="subtle",
         ),
         dmc.NavLink(
             label="Stats Dashboard",
             leftSection=get_icon("tabler:gauge"),
-            href="/page3",
+            href="/dash/page3",
             refresh=True,
             variant="subtle",
         ),

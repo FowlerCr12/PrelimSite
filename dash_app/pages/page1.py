@@ -77,7 +77,7 @@ def load_claims_data(n):
         # Add "View / Edit" link as clickable markdown
         for row in claims:
             cid = row["id"]
-            row["View / Edit"] = f"[Edit](/edit/{cid})"
+            row["View / Edit"] = f"[Edit](/dash/edit/{cid})"
             rows_with_links.append(row)
 
     except pymysql.Error as e:
