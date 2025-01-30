@@ -26,7 +26,7 @@ def register_user(email, password, first_name, last_name):
         cursor = conn.cursor()
         
         sql = """
-        INSERT INTO users (email, password_hash, first_name, last_name)
+        INSERT INTO users (email, passwordHash, first_name, last_name)
         VALUES (%s, %s, %s, %s)
         """
         cursor.execute(sql, (
