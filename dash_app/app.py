@@ -41,14 +41,14 @@ navlinks_refresh = dmc.Stack(
             label="Home",
             leftSection=get_icon("bi:house-door-fill"),
             href="/",
-            refresh=True,
+            refresh=False,
             variant="subtle",
         ),
         dmc.NavLink(
             label="Need Review",
             leftSection=get_icon("tabler:gauge"),
             href="/page1",
-            refresh=True,
+            refresh=False,
             variant="subtle",
         ),
         dmc.NavLink(
