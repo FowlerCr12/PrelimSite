@@ -343,80 +343,32 @@ def layout(cid=None, **other_kwargs):
 
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Loss Address",
-                        id="loss-address",
-                        value=claim_data.get("Loss_Address", ""),
-                        placeholder="Enter loss address",
-                        style=get_style("loss-address", {"width": "45%"}),
-                    ),
-                    dmc.TextInput(
-                        label="Date of Loss",
-                        id="date-of-loss",
-                        value=claim_data.get("Date_Of_Loss", ""),
-                        placeholder="YYYY-MM-DD",
-                        style=get_style("date-of-loss", {"width": "45%"}),
-                    ),
+                    get_text_input("Loss Address", "loss-address", claim_data.get("Loss_Address", ""), "Enter loss address", get_style("loss-address", {"width": "45%"}),),
+                    get_text_input("Date of Loss", "date-of-loss", claim_data.get("Date_Of_Loss", ""), "YYYY-MM-DD", get_style("date-of-loss", {"width": "45%"}),),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Insurer",
-                        id="insurer",
-                        value=claim_data.get("Insurer", ""),
-                        placeholder="e.g. Acme Insurance",
-                        style=get_style("insurer", {"width": "45%"}),
-                    ),
-                    dmc.TextInput(
-                        label="Adjuster Name",
-                        id="adjuster-name",
-                        value=claim_data.get("Adjuster_Name", ""),
-                        placeholder="e.g. John Doe",
-                        style=get_style("adjuster-name", {"width": "45%"}),
-                    ),
+                    get_text_input("Insurer", "insurer", claim_data.get("Insurer", ""), "e.g. Acme Insurance", get_style("insurer", {"width": "45%"}),),
+                    get_text_input("Adjuster Name", "adjuster-name", claim_data.get("Adjuster_Name", ""), "e.g. John Doe", get_style("adjuster-name", {"width": "45%"}),),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Policy Number",
-                        id="policy-number",
-                        value=claim_data.get("Policy_Number", ""),
-                        placeholder="Policy #",
-                        style=get_style("policy-number", {"width": "45%"}),
-                    ),
-                    dmc.TextInput(
-                        label="Claim Type",
-                        id="claim-type",
-                        value=claim_data.get("claim_type", ""),
-                        placeholder="Building Only/Contents Only/Building and Contents",
-                        style=get_style("claim-type", {"width": "45%"}),
-                    ),
+                    get_text_input("Policy Number", "policy-number", claim_data.get("Policy_Number", ""), "Policy #", get_style("policy-number", {"width": "45%"}),),
+                    get_text_input("Claim Type", "claim-type", claim_data.get("claim_type", ""), "Building Only/Contents Only/Building and Contents", get_style("claim-type", {"width": "45%"}),),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Contact Information (Adjuster)",
-                        id="contact-info-adjuster",
-                        value=claim_data.get("Adjuster_Contact_Info", ""),
-                        placeholder="Phone / Email",
-                        style=get_style("contact-info-adjuster", {"width": "45%"}),
-                    ),
-                    dmc.TextInput(
-                        label="Contact Information (Insured)",
-                        id="contact-info-insured",
-                        value=claim_data.get("Insured_Contact_Info", ""),
-                        placeholder="Phone / Email",
-                        style=get_style("contact-info-insured", {"width": "45%"}),
-                    ),
+                    get_text_input("Contact Information (Adjuster)", "contact-info-adjuster", claim_data.get("Adjuster_Contact_Info", ""), "Phone / Email", get_style("contact-info-adjuster", {"width": "45%"}),),
+                    get_text_input("Contact Information (Insured)", "contact-info-insured", claim_data.get("Insured_Contact_Info", ""), "Phone / Email", get_style("contact-info-insured", {"width": "45%"}),),
                 ],
                 justify="space-between"
             ),
@@ -430,55 +382,22 @@ def layout(cid=None, **other_kwargs):
                     # Column 1: Coverage and Deductible
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Coverage A",
-                                id="coverage-a",
-                                value=claim_data.get("coverage_building", ""),
-                                placeholder="Building Coverage",
-                                style=get_style("coverage-a")
-                            ),
-                            dmc.TextInput(
-                                label="Coverage A Deductible",
-                                id="coverage-a-deductible",
-                                value=claim_data.get("Coverage_A_Deductible", ""),
-                                style=get_style("coverage-a-deductible")
-                            ),
+                            get_text_input("Coverage A", "coverage-a", claim_data.get("coverage_building", ""), "Building Coverage", get_style("coverage-a")),
+                            get_text_input("Coverage A Deductible", "coverage-a-deductible", claim_data.get("Coverage_A_Deductible", ""), "", get_style("coverage-a-deductible")),
                         ],
                     ),
                     # Column 2: RCV Loss Values
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Dwelling Unit RCV Loss",
-                                id="dwelling-unit-rcv-loss",
-                                value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
-                                placeholder="Enter RCV Loss amount",
-                                style=get_style("dwelling-unit-rcv-loss")
-                            ),
-                            dmc.TextInput(
-                                label="Detached Garage RCV Loss",
-                                id="detached-garage-rcv-loss",
-                                value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
-                                placeholder="Enter RCV Loss amount",
-                                style=get_style("detached-garage-rcv-loss")
-                            ),
+                            get_text_input("Dwelling Unit RCV Loss", "dwelling-unit-rcv-loss", claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("dwelling-unit-rcv-loss")),
+                            get_text_input("Detached Garage RCV Loss", "detached-garage-rcv-loss", claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("detached-garage-rcv-loss")),
                         ],
                     ),
                     # Column 3: Reserve and Advance
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Coverage A Reserve",
-                                id="coverage-a-reserve",
-                                value=claim_data.get("Coverage_A_Reserve", ""),
-                                style=get_style("coverage-a-reserve")
-                            ),
-                            dmc.TextInput(
-                                label="Coverage A Advance",
-                                id="coverage-a-advance",
-                                value=claim_data.get("Coverage_A_Advance", ""),
-                                style=get_style("coverage-a-advance")
-                            ),
+                            get_text_input("Coverage A Reserve", "coverage-a-reserve", claim_data.get("Coverage_A_Reserve", ""), "", get_style("coverage-a-reserve")),
+                            get_text_input("Coverage A Advance", "coverage-a-advance", claim_data.get("Coverage_A_Advance", ""), "", get_style("coverage-a-advance")),
                         ],
                     ),
                 ],
@@ -493,55 +412,22 @@ def layout(cid=None, **other_kwargs):
                     # Column 1: Coverage and Deductible
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Coverage B",
-                                id="coverage-b",
-                                value=claim_data.get("coverage_contents", ""),
-                                placeholder="Contents Coverage",
-                                style=get_style("coverage-b")
-                            ),
-                            dmc.TextInput(
-                                label="Coverage B Deductible",
-                                id="coverage-b-deductible",
-                                value=claim_data.get("Coverage_B_Deductible", ""),
-                                style=get_style("coverage-b-deductible")
-                            ),
+                            get_text_input("Coverage B", "coverage-b", claim_data.get("coverage_contents", ""), "Contents Coverage", get_style("coverage-b")),
+                            get_text_input("Coverage B Deductible", "coverage-b-deductible", claim_data.get("Coverage_B_Deductible", ""), "", get_style("coverage-b-deductible")),
                         ],
                     ),
                     # Column 2: RCV Loss Values
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Contents RCV Loss",
-                                id="contents-rcv-loss",
-                                value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
-                                placeholder="Enter RCV Loss amount",
-                                style=get_style("contents-rcv-loss")
-                            ),
-                            dmc.TextInput(
-                                label="Improvements RCV Loss",
-                                id="improvements-rcv-loss",
-                                value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
-                                placeholder="Enter RCV Loss amount",
-                                style=get_style("improvements-rcv-loss")
-                            ),
+                            get_text_input("Contents RCV Loss", "contents-rcv-loss", claim_data.get("Contents_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("contents-rcv-loss")),
+                            get_text_input("Improvements RCV Loss", "improvements-rcv-loss", claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("improvements-rcv-loss")),
                         ],
                     ),
                     # Column 3: Reserve and Advance
                     dmc.Stack(
                         [
-                            dmc.TextInput(
-                                label="Coverage B Reserve",
-                                id="coverage-b-reserve",
-                                value=claim_data.get("Coverage_B_Reserve", ""),
-                                style=get_style("coverage-b-reserve")
-                            ),
-                            dmc.TextInput(
-                                label="Coverage B Advance",
-                                id="coverage-b-advance",
-                                value=claim_data.get("Coverage_B_Advance", ""),
-                                style=get_style("coverage-b-advance")
-                            ),
+                            get_text_input("Coverage B Reserve", "coverage-b-reserve", claim_data.get("Coverage_B_Reserve", ""), "", get_style("coverage-b-reserve")),
+                            get_text_input("Coverage B Advance", "coverage-b-advance", claim_data.get("Coverage_B_Advance", ""), "", get_style("coverage-b-advance")),
                         ],
                     ),
                 ],
@@ -561,27 +447,9 @@ def layout(cid=None, **other_kwargs):
             # Here we have 3 date fields, let's place them in a single row
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Claim Assigned Date",
-                        id="claim-assigned-date",
-                        value=claim_data.get("Claim_Assigned_Date", ""),
-                        placeholder="YYYY-MM-DD",
-                        style=get_style("claim-assigned-date", {"width": "30%"})
-                    ),
-                    dmc.TextInput(
-                        label="Claim Contact Date",
-                        id="claim-contact-date",
-                        value=claim_data.get("Claim_Contact_Date", ""),
-                        placeholder="YYYY-MM-DD",
-                        style=get_style("claim-contact-date", {"width": "30%"})
-                    ),
-                    dmc.TextInput(
-                        label="Claim Inspection Date",
-                        id="claim-inspection-date",
-                        value=claim_data.get("Claim_Inspection_Date", ""),
-                        placeholder="YYYY-MM-DD",
-                        style=get_style("claim-inspection-date", {"width": "30%"})
-                    ),
+                    get_text_input("Claim Assigned Date", "claim-assigned-date", claim_data.get("Claim_Assigned_Date", ""), "YYYY-MM-DD", get_style("claim-assigned-date", {"width": "30%"})),
+                    get_text_input("Claim Contact Date", "claim-contact-date", claim_data.get("Claim_Contact_Date", ""), "YYYY-MM-DD", get_style("claim-contact-date", {"width": "30%"})),
+                    get_text_input("Claim Inspection Date", "claim-inspection-date", claim_data.get("Claim_Inspection_Date", ""), "YYYY-MM-DD", get_style("claim-inspection-date", {"width": "30%"}))
                 ],
                 justify="space-between",
                 style={"marginTop": "1rem"}
