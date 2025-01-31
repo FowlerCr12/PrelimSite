@@ -260,19 +260,50 @@ db_connection = mysql.connector.connect(
 )
 db_cursor = db_connection.cursor()
 
+def check_claim_in_db(cid, compliance_report_type):
+    """
+    Check if claim exists in DB and has same compliance report type.
+    Returns True if claim should be skipped, False if it should be processed.
+    """
+    try:
+        query = """
+            SELECT compliance_report_type 
+            FROM claims 
+            WHERE claim_number = %s
+        """
+        db_cursor.execute(query, (cid,))
+        result = db_cursor.fetchone()
+        
+        if result is None:
+            # Claim not in DB, should process
+            return False
+        
+        stored_report_type = result[0]
+        if stored_report_type != compliance_report_type:
+            # Different report type, should process
+            return False
+            
+        # Claim exists with same report type, should skip
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR][DB] Error checking claim {cid} in DB: {e}")
+        return False  # On error, process the claim to be safe
+
 def store_in_db(cid, notes_spaces_link, binder_spaces_link):
     """
     Insert or update your row in the 'claims' table.
     """
     try:
         insert_sql = """
-            INSERT INTO claims (claim_number, notes_spaces_link, binder_spaces_link)
-            VALUES (%s, %s, %s)
+            INSERT INTO claims (claim_number, notes_spaces_link, binder_spaces_link, compliance_report_type)
+            VALUES (%s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
               notes_spaces_link = VALUES(notes_spaces_link),
-              binder_spaces_link = VALUES(binder_spaces_link);
+              binder_spaces_link = VALUES(binder_spaces_link),
+              compliance_report_type = VALUES(compliance_report_type);
         """
-        db_cursor.execute(insert_sql, (cid, notes_spaces_link, binder_spaces_link))
+        db_cursor.execute(insert_sql, (cid, notes_spaces_link, binder_spaces_link, compliance_report_type))
         db_connection.commit()
         print(f"[DB] Upserted Claim {cid} with notes={notes_spaces_link}, binder={binder_spaces_link}")
     except Exception as e:
@@ -333,13 +364,16 @@ try:
                 claim_link = row.find_element(By.XPATH, ".//td/a[contains(@href, 'pg=notes')]")
                 claim_href = claim_link.get_attribute("href")
                 cid = claim_href.split("cid=")[1]
+                compliance_report_link = row.find_element(By.XPATH, ".//td/a[contains(@href, 'compliance.php')]")
+                compliance_report_href = compliance_report_link.get_attribute("href")
+                compliance_report_type = compliance_report_href.split("rtype=")[1]
 
                 notes_file_path = os.path.join(NOTES_FOLDER, f"{cid}.txt")
                 has_final_path = os.path.join(NOTES_FOLDER, f"{cid}hasFinalReport.txt")
 
-                # Skip if we've processed this claim before
-                if os.path.exists(notes_file_path) or os.path.exists(has_final_path):
-                    print(f"[DEBUG] Claim {cid} already processed, skipping.")
+                # Replace the file system check with DB check
+                if check_claim_in_db(cid, compliance_report_type):
+                    print(f"[DEBUG] Claim {cid} already processed with same report type, skipping.")
                     continue
 
                 print(f"\n[DEBUG] Processing Claim {cid}")
