@@ -12,6 +12,7 @@ columns = [
     {"name": "CID",            "id": "claim_number",   "type": "text"},
     {"name": "Insurer",        "id": "Insurer",        "type": "text"},
     {"name": "Review Status",  "id": "Review_Status",  "type": "text"},
+    {"name": "Report Type",    "id": "compliance_report_type",    "type": "text"},
     {
         "name": "Download / Edit",
         "id": "View / Edit",
@@ -67,7 +68,8 @@ def load_claims_data(n):
             id, 
             claim_number, 
             Insurer,
-            Review_Status
+            Review_Status,
+            compliance_report_type
         FROM claims 
         ORDER BY id DESC
         """

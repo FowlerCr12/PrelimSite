@@ -49,6 +49,13 @@ def layout(cid=None, **other_kwargs):
                 row = cursor.fetchone()
                 if row:
                     claim_data = row
+                    print("DEBUG: Coverage Values from DB:")
+                    print(f"Coverage A Deductible: {row.get('Coverage_A_Deductible')}")
+                    print(f"Coverage A Reserve: {row.get('Coverage_A_Reserve')}")
+                    print(f"Coverage A Advance: {row.get('Coverage_A_Advance')}")
+                    print(f"Coverage B Deductible: {row.get('Coverage_B_Deductible')}")
+                    print(f"Coverage B Reserve: {row.get('Coverage_B_Reserve')}")
+                    print(f"Coverage B Advance: {row.get('Coverage_B_Advance')}")
             except Exception as e:
                 print(f"Error fetching claim data for CID={cid}: {e}")
             finally:
@@ -103,19 +110,28 @@ def layout(cid=None, **other_kwargs):
 
     def get_confidence(field_id):
         # Get the corresponding JSON type for this field
-        json_type = field_type_mapping.get(field_id)        
+        json_type = field_type_mapping.get(field_id)
+        print(f"\nDEBUG get_confidence:")
+        print(f"Field ID: {field_id}")
+        print(f"Mapped JSON type: {json_type}")
+        print(f"json_data: {json_data}")
+        
         if not json_type:
             print(f"No mapping found for field_id '{field_id}', returning default 0.90")
             return .90  # Default confidence if no mapping exists
         
         if json_data and 'entities' in json_data:
+            print(f"Searching through {len(json_data['entities'])} entities")
             for entity in json_data['entities']:
                 print(f"  Checking entity: type={entity.get('type')}, confidence={entity.get('confidence')}")
                 if entity.get('type') == json_type:
                     confidence = entity.get('confidence', 1.0)
+                    print(f"  ✓ Match found! Returning confidence: {confidence}")
                     return confidence
+            print(f"No matching entity found for type '{json_type}', returning 1.0")
         else:
             print("No json_data or 'entities' not in json_data, returning 1.0")
+            print(f"json_data type: {type(json_data)}")
             if json_data:
                 print(f"json_data keys: {json_data.keys()}")
         return 1.0
@@ -176,7 +192,6 @@ def layout(cid=None, **other_kwargs):
             value = ""
         elif isinstance(value, str):
             value = value.strip()
-            
         
         confidence = get_confidence(field_id)
         
@@ -227,25 +242,6 @@ def layout(cid=None, **other_kwargs):
             })
             
         return base_style
-
-    def get_text_input(label, id, value, placeholder, style):
-        return dmc.TextInput(
-            label=label,
-            id=id,
-            value=value,
-            placeholder=placeholder,
-            style=style
-        )
-    
-    def get_textarea(label, id, value, placeholder, style):
-        return dmc.Textarea(
-            label=label,
-            id=id,
-            value=value,
-            placeholder=placeholder,
-            style=style,
-            minRows=3
-        )
 
     return dmc.Stack(
         [
@@ -329,8 +325,20 @@ def layout(cid=None, **other_kwargs):
             # ========== Basic Fields in columns ==========
             dmc.Group(
                 [
-                    get_text_input("Claim Number", "claim-number", claim_data.get("claim_number", ""), "Enter claim number", get_style("claim-number", {"width": "45%"})),
-                    get_text_input("Policyholder", "policyholder", claim_data.get("Policyholder", ""), "Enter policyholder name", get_style("policyholder", {"width": "45%"})),
+                    dmc.TextInput(
+                        label="Claim Number",
+                        id="claim-number",
+                        value=claim_data.get("claim_number", ""),
+                        placeholder="Enter claim number",
+                        style=get_style("claim-number", {"width": "45%"}),
+                    ),
+                    dmc.TextInput(
+                        label="Policyholder",
+                        id="policyholder",
+                        value=claim_data.get("Policyholder", ""),
+                        placeholder="Enter policyholder name",
+                        style=get_style("policyholder", {"width": "45%"}),
+                    ),
                 ],
                 justify="space-between",
                 style={"marginTop": "1rem"}
@@ -338,32 +346,80 @@ def layout(cid=None, **other_kwargs):
 
             dmc.Group(
                 [
-                    get_text_input("Loss Address", "loss-address", claim_data.get("Loss_Address", ""), "Enter loss address", get_style("loss-address", {"width": "45%"})),
-                    get_text_input("Date of Loss", "date-of-loss", claim_data.get("Date_Of_Loss", ""), "YYYY-MM-DD", get_style("date-of-loss", {"width": "45%"})),
+                    dmc.TextInput(
+                        label="Loss Address",
+                        id="loss-address",
+                        value=claim_data.get("Loss_Address", ""),
+                        placeholder="Enter loss address",
+                        style=get_style("loss-address", {"width": "45%"}),
+                    ),
+                    dmc.TextInput(
+                        label="Date of Loss",
+                        id="date-of-loss",
+                        value=claim_data.get("Date_Of_Loss", ""),
+                        placeholder="YYYY-MM-DD",
+                        style=get_style("date-of-loss", {"width": "45%"}),
+                    ),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    get_text_input("Insurer", "insurer", claim_data.get("Insurer", ""), "e.g. Acme Insurance", get_style("insurer", {"width": "45%"})),
-                    get_text_input("Adjuster Name", "adjuster-name", claim_data.get("Adjuster_Name", ""), "e.g. John Doe", get_style("adjuster-name", {"width": "45%"})),
+                    dmc.TextInput(
+                        label="Insurer",
+                        id="insurer",
+                        value=claim_data.get("Insurer", ""),
+                        placeholder="e.g. Acme Insurance",
+                        style=get_style("insurer", {"width": "45%"}),
+                    ),
+                    dmc.TextInput(
+                        label="Adjuster Name",
+                        id="adjuster-name",
+                        value=claim_data.get("Adjuster_Name", ""),
+                        placeholder="e.g. John Doe",
+                        style=get_style("adjuster-name", {"width": "45%"}),
+                    ),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    get_text_input("Policy Number", "policy-number", claim_data.get("Policy_Number", ""), "Policy #", get_style("policy-number", {"width": "45%"})),
-                    get_text_input("Claim Type", "claim-type", claim_data.get("claim_type", ""), "Building Only/Contents Only/Building and Contents", get_style("claim-type", {"width": "45%"})),
+                    dmc.TextInput(
+                        label="Policy Number",
+                        id="policy-number",
+                        value=claim_data.get("Policy_Number", ""),
+                        placeholder="Policy #",
+                        style=get_style("policy-number", {"width": "45%"}),
+                    ),
+                    dmc.TextInput(
+                        label="Claim Type",
+                        id="claim-type",
+                        value=claim_data.get("claim_type", ""),
+                        placeholder="Building Only/Contents Only/Building and Contents",
+                        style=get_style("claim-type", {"width": "45%"}),
+                    ),
                 ],
                 justify="space-between"
             ),
 
             dmc.Group(
                 [
-                    get_text_input("Contact Information (Adjuster)", "contact-info-adjuster", claim_data.get("Adjuster_Contact_Info", ""), "Phone / Email", get_style("contact-info-adjuster", {"width": "45%"})),
-                    get_text_input("Contact Information (Insured)", "contact-info-insured", claim_data.get("Insured_Contact_Info", ""), "Phone / Email", get_style("contact-info-insured", {"width": "45%"})),
+                    dmc.TextInput(
+                        label="Contact Information (Adjuster)",
+                        id="contact-info-adjuster",
+                        value=claim_data.get("Adjuster_Contact_Info", ""),
+                        placeholder="Phone / Email",
+                        style=get_style("contact-info-adjuster", {"width": "45%"}),
+                    ),
+                    dmc.TextInput(
+                        label="Contact Information (Insured)",
+                        id="contact-info-insured",
+                        value=claim_data.get("Insured_Contact_Info", ""),
+                        placeholder="Phone / Email",
+                        style=get_style("contact-info-insured", {"width": "45%"}),
+                    ),
                 ],
                 justify="space-between"
             ),
@@ -377,22 +433,55 @@ def layout(cid=None, **other_kwargs):
                     # Column 1: Coverage and Deductible
                     dmc.Stack(
                         [
-                            get_text_input("Coverage A", "coverage-a", claim_data.get("coverage_building", ""), "Building Coverage", get_style("coverage-a")),
-                            get_text_input("Coverage A Deductible", "coverage-a-deductible", claim_data.get("Coverage_A_Deductible", ""), "", get_style("coverage-a-deductible")),
+                            dmc.TextInput(
+                                label="Coverage A",
+                                id="coverage-a",
+                                value=claim_data.get("coverage_building", ""),
+                                placeholder="Building Coverage",
+                                style=get_style("coverage-a")
+                            ),
+                            dmc.TextInput(
+                                label="Coverage A Deductible",
+                                id="coverage-a-deductible",
+                                value=claim_data.get("Coverage_A_Deductible", ""),
+                                style=get_style("coverage-a-deductible")
+                            ),
                         ],
                     ),
                     # Column 2: RCV Loss Values
                     dmc.Stack(
                         [
-                            get_text_input("Dwelling Unit RCV Loss", "dwelling-unit-rcv-loss", claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("dwelling-unit-rcv-loss")),
-                            get_text_input("Detached Garage RCV Loss", "detached-garage-rcv-loss", claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("detached-garage-rcv-loss")),
+                            dmc.TextInput(
+                                label="Dwelling Unit RCV Loss",
+                                id="dwelling-unit-rcv-loss",
+                                value=claim_data.get("DwellingUnit_Insured_Damage_RCV_Loss", ""),
+                                placeholder="Enter RCV Loss amount",
+                                style=get_style("dwelling-unit-rcv-loss")
+                            ),
+                            dmc.TextInput(
+                                label="Detached Garage RCV Loss",
+                                id="detached-garage-rcv-loss",
+                                value=claim_data.get("DetachedGarage_Insured_Damage_RCV_Loss", ""),
+                                placeholder="Enter RCV Loss amount",
+                                style=get_style("detached-garage-rcv-loss")
+                            ),
                         ],
                     ),
                     # Column 3: Reserve and Advance
                     dmc.Stack(
                         [
-                            get_text_input("Coverage A Reserve", "coverage-a-reserve", claim_data.get("Coverage_A_Reserve", ""), "", get_style("coverage-a-reserve")),
-                            get_text_input("Coverage A Advance", "coverage-a-advance", claim_data.get("Coverage_A_Advance", ""), "", get_style("coverage-a-advance")),
+                            dmc.TextInput(
+                                label="Coverage A Reserve",
+                                id="coverage-a-reserve",
+                                value=claim_data.get("Coverage_A_Reserve", ""),
+                                style=get_style("coverage-a-reserve")
+                            ),
+                            dmc.TextInput(
+                                label="Coverage A Advance",
+                                id="coverage-a-advance",
+                                value=claim_data.get("Coverage_A_Advance", ""),
+                                style=get_style("coverage-a-advance")
+                            ),
                         ],
                     ),
                 ],
@@ -407,52 +496,165 @@ def layout(cid=None, **other_kwargs):
                     # Column 1: Coverage and Deductible
                     dmc.Stack(
                         [
-                            get_text_input("Coverage B", "coverage-b", claim_data.get("coverage_contents", ""), "Contents Coverage", get_style("coverage-b")),
-                            get_text_input("Coverage B Deductible", "coverage-b-deductible", claim_data.get("Coverage_B_Deductible", ""), "", get_style("coverage-b-deductible")),
+                            dmc.TextInput(
+                                label="Coverage B",
+                                id="coverage-b",
+                                value=claim_data.get("coverage_contents", ""),
+                                placeholder="Contents Coverage",
+                                style=get_style("coverage-b")
+                            ),
+                            dmc.TextInput(
+                                label="Coverage B Deductible",
+                                id="coverage-b-deductible",
+                                value=claim_data.get("Coverage_B_Deductible", ""),
+                                style=get_style("coverage-b-deductible")
+                            ),
                         ],
                     ),
                     # Column 2: RCV Loss Values
                     dmc.Stack(
                         [
-                            get_text_input("Contents RCV Loss", "contents-rcv-loss", claim_data.get("Contents_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("contents-rcv-loss")),
-                            get_text_input("Improvements RCV Loss", "improvements-rcv-loss", claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""), "Enter RCV Loss amount", get_style("improvements-rcv-loss")),
+                            dmc.TextInput(
+                                label="Contents RCV Loss",
+                                id="contents-rcv-loss",
+                                value=claim_data.get("Contents_Insured_Damage_RCV_Loss", ""),
+                                placeholder="Enter RCV Loss amount",
+                                style=get_style("contents-rcv-loss")
+                            ),
+                            dmc.TextInput(
+                                label="Improvements RCV Loss",
+                                id="improvements-rcv-loss",
+                                value=claim_data.get("Improvements_Insured_Damage_RCV_Loss", ""),
+                                placeholder="Enter RCV Loss amount",
+                                style=get_style("improvements-rcv-loss")
+                            ),
                         ],
                     ),
                     # Column 3: Reserve and Advance
                     dmc.Stack(
                         [
-                            get_text_input("Coverage B Reserve", "coverage-b-reserve", claim_data.get("Coverage_B_Reserve", ""), "", get_style("coverage-b-reserve")),
-                            get_text_input("Coverage B Advance", "coverage-b-advance", claim_data.get("Coverage_B_Advance", ""), "", get_style("coverage-b-advance")),
+                            dmc.TextInput(
+                                label="Coverage B Reserve",
+                                id="coverage-b-reserve",
+                                value=claim_data.get("Coverage_B_Reserve", ""),
+                                style=get_style("coverage-b-reserve")
+                            ),
+                            dmc.TextInput(
+                                label="Coverage B Advance",
+                                id="coverage-b-advance",
+                                value=claim_data.get("Coverage_B_Advance", ""),
+                                style=get_style("coverage-b-advance")
+                            ),
                         ],
                     ),
                 ],
             ),
 
             # ========== Paragraph Field (full width) ==========
-            get_textarea("Current Claim Status Paragraph", "Current_Claim_Status_Par", claim_data.get("Current_Claim_Status_Par", ""), "Summarize the current claim status...", get_style("Current_Claim_Status_Par", {"width": "100%"}), {"marginTop": "1rem"}),
+            dmc.Textarea(
+                label="Current Claim Status Paragraph",
+                id="Current_Claim_Status_Par",
+                value=claim_data.get("Current_Claim_Status_Par", ""),
+                placeholder="Summarize the current claim status...",
+                minRows=3,
+                style={"marginTop": "1rem"}
+            ),
 
             # ========== NEW FIELDS: Dates in columns ==========
             # Here we have 3 date fields, let's place them in a single row
             dmc.Group(
                 [
-                    get_text_input("Claim Assigned Date", "claim-assigned-date", claim_data.get("Claim_Assigned_Date", ""), "YYYY-MM-DD", get_style("claim-assigned-date", {"width": "30%"})),
-                    get_text_input("Claim Contact Date", "claim-contact-date", claim_data.get("Claim_Contact_Date", ""), "YYYY-MM-DD", get_style("claim-contact-date", {"width": "30%"})),
-                    get_text_input("Claim Inspection Date", "claim-inspection-date", claim_data.get("Claim_Inspection_Date", ""), "YYYY-MM-DD", get_style("claim-inspection-date", {"width": "30%"})),
+                    dmc.TextInput(
+                        label="Claim Assigned Date",
+                        id="claim-assigned-date",
+                        value=claim_data.get("Claim_Assigned_Date", ""),
+                        placeholder="YYYY-MM-DD",
+                        style=get_style("claim-assigned-date", {"width": "30%"})
+                    ),
+                    dmc.TextInput(
+                        label="Claim Contact Date",
+                        id="claim-contact-date",
+                        value=claim_data.get("Claim_Contact_Date", ""),
+                        placeholder="YYYY-MM-DD",
+                        style=get_style("claim-contact-date", {"width": "30%"})
+                    ),
+                    dmc.TextInput(
+                        label="Claim Inspection Date",
+                        id="claim-inspection-date",
+                        value=claim_data.get("Claim_Inspection_Date", ""),
+                        placeholder="YYYY-MM-DD",
+                        style=get_style("claim-inspection-date", {"width": "30%"})
+                    ),
                 ],
                 justify="space-between",
                 style={"marginTop": "1rem"}
             ),
 
             # ========== Paragraph-type fields (full width) ==========
-            get_textarea("Preliminary Report Paragraph", "preliminary-report-par", claim_data.get("Preliminary_Report_Par", ""), "Details for Preliminary Report...", get_style("preliminary-report-par", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Insured Communication Paragraph", "insured-communication-paragraph", claim_data.get("Insured_Communication_Paragraph", ""), "Details about communication with the insured...", get_style("insured-communication-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Claim Reserve Paragraph", "claim-reserve-paragraph", claim_data.get("Claim_Reserve_Paragraph", ""), "Details about the claim reserves...", get_style("claim-reserve-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Insured Concern Paragraph", "insured-concern-paragraph", claim_data.get("Insured_Concern_Paragraph", ""), "Summarize any insured concerns...", get_style("insured-concern-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Adjuster Response Paragraph", "adjuster-response-paragraph", claim_data.get("Adjuster_Response_Paragraph", ""), "Adjuster's response or actions taken...", get_style("adjuster-response-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Supporting Documents Paragraph", "supporting-doc-paragraph", claim_data.get("Supporting_Doc_Paragraph", ""), "Summary of supporting documents...", get_style("supporting-doc-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Next Steps Paragraph", "next-steps-paragraph", claim_data.get("Next_Steps_Paragraph", ""), "Outline the next steps in the claim process...", get_style("next-steps-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Final Report Paragraph", "final-report-paragraph", claim_data.get("Final_Report_Paragraph", ""), "Details of the final report...", get_style("final-report-paragraph", {"width": "100%"}), {"marginTop": "1rem"}),
-            get_textarea("Claim Summary Paragraph", "claim-summary-par", claim_data.get("Claim_Summary_Par", ""), "A concise summary of the claim...", get_style("claim-summary-par", {"width": "100%"}), {"marginTop": "1rem"}),
+            dmc.Textarea(
+                label="Preliminary Report Paragraph",
+                id="preliminary-report-par",
+                value=claim_data.get("Preliminary_Report_Par", ""),
+                placeholder="Details for Preliminary Report...",
+                minRows=3,
+                style={"marginTop": "1rem"}
+            ),
+            dmc.Textarea(
+                label="Insured Communication Paragraph",
+                id="insured-communication-paragraph",
+                value=claim_data.get("Insured_Communication_Paragraph", ""),
+                placeholder="Details about communication with the insured...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Claim Reserve Paragraph",
+                id="claim-reserve-paragraph",
+                value=claim_data.get("Claim_Reserve_Paragraph", ""),
+                placeholder="Details about the claim reserves...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Insured Concern Paragraph",
+                id="insured-concern-paragraph",
+                value=claim_data.get("Insured_Concern_Paragraph", ""),
+                placeholder="Summarize any insured concerns...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Adjuster Response Paragraph",
+                id="adjuster-response-paragraph",
+                value=claim_data.get("Adjuster_Response_Paragraph", ""),
+                placeholder="Adjuster's response or actions taken...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Supporting Documents Paragraph",
+                id="supporting-doc-paragraph",
+                value=claim_data.get("Supporting_Doc_Paragraph", ""),
+                placeholder="Summary of supporting documents...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Next Steps Paragraph",
+                id="next-steps-paragraph",
+                value=claim_data.get("Next_Steps_Paragraph", ""),
+                placeholder="Outline the next steps in the claim process...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Final Report Paragraph",
+                id="final-report-paragraph",
+                value=claim_data.get("Final_Report_Paragraph", ""),
+                placeholder="Details of the final report...",
+                minRows=3
+            ),
+            dmc.Textarea(
+                label="Claim Summary Paragraph",
+                id="claim-summary-par",
+                value=claim_data.get("Claim_Summary_Par", ""),
+                placeholder="A concise summary of the claim...",
+                minRows=3
+            ),
             dmc.Select(
             label="Review Status",
             id="review-status",
@@ -676,7 +878,7 @@ def save_claim(
         ))
         conn.commit()
         msg = "Changes saved successfully!"
-        print(msg)
+        print("Changes saved successfully!")
     except Exception as e:
         conn.rollback()
         msg = f"Error saving changes: {e}"
@@ -841,6 +1043,7 @@ def download_docx(n_clicks, row_id):
     prevent_initial_call=False
 )
 def update_binder_link(cid):
+    print("\n" + "=" * 50)
     print(f"Callback triggered with cid: {cid}")
     
     if not cid:
@@ -854,18 +1057,23 @@ def update_binder_link(cid):
         print(f"Querying database for claim_number: {cid}")
         cursor.execute("SELECT binder_spaces_link FROM claims WHERE id = %s", (cid,))
         result = cursor.fetchone()
-                
+        
+        print(f"Database result: {result}")
+        
         if not result or not result['binder_spaces_link']:
             print("No binder link found in database")
             return "#"
             
         spaces_link = result['binder_spaces_link']
+        print(f"Found spaces link: {spaces_link}")
         
         # Parse the Spaces URL
         parsed_url = urlparse(spaces_link)
         bucket_name = 'prelim-program-file-storage'
         key = parsed_url.path.lstrip('/')
-                
+        
+        print(f"Parsed bucket: {bucket_name}, key: {key}")
+        
         session = boto3.session.Session()
         client = session.client('s3',
             region_name='nyc3',
@@ -886,6 +1094,7 @@ def update_binder_link(cid):
             ExpiresIn=3600
         )
         
+        print(f"Generated presigned URL: {url}")
         return url
         
     except Exception as e:
