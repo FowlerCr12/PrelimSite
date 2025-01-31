@@ -251,7 +251,15 @@ def layout(cid=None, **other_kwargs):
             placeholder=placeholder,
             style=style
         )
-
+    
+    def get_textarea(label, id, value, placeholder):
+        return dmc.Textarea(
+            label=label,
+            id=id,
+            value=value,
+            placeholder=placeholder,
+            minRows=3,
+        )
     return dmc.Stack(
         [
             store_cid,  # hidden, just holds the cid for the callback
@@ -434,14 +442,7 @@ def layout(cid=None, **other_kwargs):
             ),
 
             # ========== Paragraph Field (full width) ==========
-            dmc.Textarea(
-                label="Current Claim Status Paragraph",
-                id="Current_Claim_Status_Par",
-                value=claim_data.get("Current_Claim_Status_Par", ""),
-                placeholder="Summarize the current claim status...",
-                minRows=3,
-                style={"marginTop": "1rem"}
-            ),
+            get_textarea("Current Claim Status Paragraph", "Current_Claim_Status_Par", claim_data.get("Current_Claim_Status_Par", ""), "Summarize the current claim status..."),
 
             # ========== NEW FIELDS: Dates in columns ==========
             # Here we have 3 date fields, let's place them in a single row
@@ -456,70 +457,28 @@ def layout(cid=None, **other_kwargs):
             ),
 
             # ========== Paragraph-type fields (full width) ==========
-            dmc.Textarea(
-                label="Preliminary Report Paragraph",
-                id="preliminary-report-par",
-                value=claim_data.get("Preliminary_Report_Par", ""),
-                placeholder="Details for Preliminary Report...",
-                minRows=3,
-                style={"marginTop": "1rem"}
-            ),
-            dmc.Textarea(
-                label="Insured Communication Paragraph",
-                id="insured-communication-paragraph",
-                value=claim_data.get("Insured_Communication_Paragraph", ""),
-                placeholder="Details about communication with the insured...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Claim Reserve Paragraph",
-                id="claim-reserve-paragraph",
-                value=claim_data.get("Claim_Reserve_Paragraph", ""),
-                placeholder="Details about the claim reserves...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Insured Concern Paragraph",
-                id="insured-concern-paragraph",
-                value=claim_data.get("Insured_Concern_Paragraph", ""),
-                placeholder="Summarize any insured concerns...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Adjuster Response Paragraph",
-                id="adjuster-response-paragraph",
-                value=claim_data.get("Adjuster_Response_Paragraph", ""),
-                placeholder="Adjuster's response or actions taken...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Supporting Documents Paragraph",
-                id="supporting-doc-paragraph",
-                value=claim_data.get("Supporting_Doc_Paragraph", ""),
-                placeholder="Summary of supporting documents...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Next Steps Paragraph",
-                id="next-steps-paragraph",
-                value=claim_data.get("Next_Steps_Paragraph", ""),
-                placeholder="Outline the next steps in the claim process...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Final Report Paragraph",
-                id="final-report-paragraph",
-                value=claim_data.get("Final_Report_Paragraph", ""),
-                placeholder="Details of the final report...",
-                minRows=3
-            ),
-            dmc.Textarea(
-                label="Claim Summary Paragraph",
-                id="claim-summary-par",
-                value=claim_data.get("Claim_Summary_Par", ""),
-                placeholder="A concise summary of the claim...",
-                minRows=3
-            ),
+            get_textarea("Preliminary Report Paragraph", "preliminary-report-par", claim_data.get("Preliminary_Report_Par", ""), "Details for Preliminary Report..."),
+
+            get_textarea("Insured Communication Paragraph", "insured-communication-paragraph", claim_data.get("Insured_Communication_Paragraph", ""), "Details about communication with the insured..."),
+            
+            get_textarea("Insured Communication Paragraph", "insured-communication-paragraph", claim_data.get("Insured_Communication_Paragraph", ""), "Details about communication with the insured..."),
+            
+            get_textarea("Claim Reserve Paragraph", "claim-reserve-paragraph", claim_data.get("Claim_Reserve_Paragraph", ""), "Details about the claim reserves..."),
+
+            get_textarea("Claim Reserve Paragraph", "claim-reserve-paragraph", claim_data.get("Claim_Reserve_Paragraph", ""), "Details about the claim reserves..."),
+
+            get_textarea("Insured Concern Paragraph", "insured-concern-paragraph", claim_data.get("Insured_Concern_Paragraph", ""), "Summarize any insured concerns..."),
+
+            get_textarea("Adjuster Response Paragraph", "adjuster-response-paragraph", claim_data.get("Adjuster_Response_Paragraph", ""), "Adjuster's response or actions taken..."),
+
+            get_textarea("Supporting Documents Paragraph", "supporting-doc-paragraph", claim_data.get("Supporting_Doc_Paragraph", ""), "Summary of supporting documents..."),
+
+            get_textarea("Next Steps Paragraph", "next-steps-paragraph", claim_data.get("Next_Steps_Paragraph", ""), "Outline the next steps in the claim process..."),
+            
+            get_textarea("Final Report Paragraph", "final-report-paragraph", claim_data.get("Final_Report_Paragraph", ""), "Details of the final report..."),
+
+            get_textarea("Claim Summary Paragraph", "claim-summary-par", claim_data.get("Claim_Summary_Par", ""), "A concise summary of the claim..."),
+
             dmc.Select(
             label="Review Status",
             id="review-status",
