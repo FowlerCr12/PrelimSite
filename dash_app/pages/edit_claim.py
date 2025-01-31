@@ -460,11 +460,7 @@ def layout(cid=None, **other_kwargs):
             get_textarea("Preliminary Report Paragraph", "preliminary-report-par", claim_data.get("Preliminary_Report_Par", ""), "Details for Preliminary Report..."),
 
             get_textarea("Insured Communication Paragraph", "insured-communication-paragraph", claim_data.get("Insured_Communication_Paragraph", ""), "Details about communication with the insured..."),
-            
-            get_textarea("Insured Communication Paragraph", "insured-communication-paragraph", claim_data.get("Insured_Communication_Paragraph", ""), "Details about communication with the insured..."),
-            
-            get_textarea("Claim Reserve Paragraph", "claim-reserve-paragraph", claim_data.get("Claim_Reserve_Paragraph", ""), "Details about the claim reserves..."),
-
+                        
             get_textarea("Claim Reserve Paragraph", "claim-reserve-paragraph", claim_data.get("Claim_Reserve_Paragraph", ""), "Details about the claim reserves..."),
 
             get_textarea("Insured Concern Paragraph", "insured-concern-paragraph", claim_data.get("Insured_Concern_Paragraph", ""), "Summarize any insured concerns..."),
