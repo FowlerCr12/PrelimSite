@@ -243,6 +243,15 @@ def layout(cid=None, **other_kwargs):
             
         return base_style
 
+    def get_text_input(label, id, value, placeholder, style):
+        return dmc.TextInput(
+            label=label,
+            id=id,
+            value=value,
+            placeholder=placeholder,
+            style=style
+        )
+
     return dmc.Stack(
         [
             store_cid,  # hidden, just holds the cid for the callback
@@ -325,20 +334,8 @@ def layout(cid=None, **other_kwargs):
             # ========== Basic Fields in columns ==========
             dmc.Group(
                 [
-                    dmc.TextInput(
-                        label="Claim Number",
-                        id="claim-number",
-                        value=claim_data.get("claim_number", ""),
-                        placeholder="Enter claim number",
-                        style=get_style("claim-number", {"width": "45%"}),
-                    ),
-                    dmc.TextInput(
-                        label="Policyholder",
-                        id="policyholder",
-                        value=claim_data.get("Policyholder", ""),
-                        placeholder="Enter policyholder name",
-                        style=get_style("policyholder", {"width": "45%"}),
-                    ),
+                    get_text_input("Claim Number", "claim-number", claim_data.get("claim_number", ""), "Enter claim number", get_style("claim-number", {"width": "45%"}),),
+                    get_text_input("Policyholder", "policyholder", claim_data.get("Policyholder", ""), "Enter policyholder name", get_style("policyholder", {"width": "45%"}),),
                 ],
                 justify="space-between",
                 style={"marginTop": "1rem"}
@@ -709,10 +706,9 @@ def layout(cid=None, **other_kwargs):
                 }
             ),
 
-        ],
-        # Removed gap or spacing usage entirely
+        ],  # Close the list
         style={"padding": "20px"}
-    )
+    )  # Close the Stack
 
 @callback(
     Output("save-confirmation", "children"),
