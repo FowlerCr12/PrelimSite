@@ -83,7 +83,7 @@ header = dmc.AppShellHeader(
     dmc.Group(
         [
             dmc.Burger(id="burger", size="sm", hiddenFrom="sm", opened=False),
-            dmc.Image(src="https://cdn.prod.website-files.com/6127cf52b9d335ca60c65756/6193e8b279a934f3cbd246a4_CNC.svg", width=100),
+            dmc.Image(src="/dash/assets/cnclogo.png", w=50, h=50, ml=10, mr=10),
             dmc.Title("Status Report Program", c="blue"),
         ],
         h="100%",
