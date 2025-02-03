@@ -258,7 +258,7 @@ db_connection = mysql.connector.connect(
     password=DB_PASSWORD,
     database=DB_NAME
 )
-db_cursor = db_connection.cursor()
+db_cursor = db_connection.cursor(buffered=True)
 
 def check_claim_in_db(cid, compliance_report_type):
     """
